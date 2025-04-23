@@ -2,6 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+typedef enum {
+    SUCCESS = 0,
+    ERR_MEMORY_ALLOCATION = 1,
+    ERR_INVALID_INPUT = 2,
+} ErrorCode;
+
 typedef struct
 {
     int width;
@@ -9,10 +15,13 @@ typedef struct
     int* values;
 } Grid;
 
+ErrorCode last_error = SUCCESS;
+
 Grid* newGrid(int width, int height, int* values) {
     Grid* grid = (Grid*)malloc(sizeof(Grid));
     if (grid == NULL) {
-        return NULL; // memory allocation failure
+        last_error = ERR_MEMORY_ALLOCATION;
+        return NULL;
     }
 
     int num_values = width * height;
@@ -22,7 +31,8 @@ Grid* newGrid(int width, int height, int* values) {
     grid->values = (int*)malloc(sizeof(int) * num_values);
     if (grid->values == NULL) {
         free(grid);
-        return NULL; // memory allocation failure
+        last_error = ERR_MEMORY_ALLOCATION;
+        return NULL;
     }
 
     for (int i = 0; i < num_values; i++) {
@@ -45,13 +55,14 @@ Grid* parseGrid(const char* input) {
     // Parse width & height from first line.
     int width = 0, height = 0;
     if (sscanf(input, "%d %d\n", &width, &height) != 2) {
+        last_error = ERR_INVALID_INPUT;
         return NULL;
     }
 
     int num_values = width * height;
     int *values = (int *)malloc(sizeof(int) * num_values);
     if (values == NULL) {
-        // failed to allocate memory
+        last_error = ERR_MEMORY_ALLOCATION;
         return NULL;
     }
 
@@ -83,8 +94,9 @@ Grid* parseGrid(const char* input) {
         // Move the pointer to the next line
         ptr = line_end ? (line_end + 1) : NULL;
     }
-    
+
     if (i != num_values) {
+        last_error = ERR_INVALID_INPUT;
         return NULL;
     }
 
