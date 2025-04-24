@@ -4,7 +4,9 @@ A C library to calculate solutions for Clear the Grid.
 
 # Usage
 
-The library can be used either from C or Lua.
+The library can be used either from C or Lua. PLEASE NOTE: When using from Lua, the library is only compatible with Lua 5.1 as this is the ABI compatability of LuaJIT in LÖVE.
+
+So, when trying to run using a Lua interpreter, ensure you're using Lua 5.1. You can verify the version with the command `$ lua -v`. Alternatively, install a LuaJIT interpreter or just use LÖVE.
 
 ## Lua
 
