@@ -13,18 +13,19 @@ Grid* newGrid(int width, int height, int* values) {
         return NULL;
     }
 
-    int num_values = width * height;
+    int length = width * height;
 
     grid->width = width;
     grid->height = height;
-    grid->values = (int*)malloc(sizeof(int) * num_values);
+    grid->length = length;
+    grid->values = (int*)malloc(sizeof(int) * length);
     if (grid->values == NULL) {
         freeGrid(grid);
         last_error = ERR_MEMORY_ALLOCATION;
         return NULL;
     }
 
-    for (int i = 0; i < num_values; i++) {
+    for (int i = 0; i < length; i++) {
         grid->values[i] = values[i];
     }
 
@@ -49,8 +50,7 @@ void printGrid(Grid* grid) {
 
 Grid* parseGrid(const char* input) {
     // trim leading & trailing whitespace and add newline at end for parsing
-    trim((char*)input);
-    strcat(input, "\n");
+    input = strcat(trim((char*)input), "\n");
 
     // Parse width & height from first line.
     int width = 0, height = 0;
@@ -59,8 +59,8 @@ Grid* parseGrid(const char* input) {
         return NULL;
     }
 
-    int num_values = width * height;
-    int *values = (int *)malloc(sizeof(int) * num_values);
+    int length = width * height;
+    int *values = (int *)malloc(sizeof(int) * length);
     if (values == NULL) {
         last_error = ERR_MEMORY_ALLOCATION;
         return NULL;
@@ -95,7 +95,7 @@ Grid* parseGrid(const char* input) {
         ptr = line_end ? (line_end + 1) : NULL;
     }
 
-    if (i != num_values) {
+    if (i != length) {
         last_error = ERR_INVALID_INPUT;
         return NULL;
     }
@@ -103,4 +103,49 @@ Grid* parseGrid(const char* input) {
     Grid *grid = newGrid(width, height, values);
 
     return grid;
+}
+
+static bool inBounds(Grid* grid, int x, int y) {
+    // Calculate the index for (x, y) in the 1D array
+    int index = y * grid->width + x;
+    return (index >= 0 && index < grid->length);
+}
+
+// Check if a move is valid
+bool isValidMove(Grid* grid, Move* move) {
+    // Check if the move is within the bounds of the grid
+    if (!inBounds(grid, move->x, move->y)) {
+        return false;  // Out of bounds
+    }
+
+    /*
+    // Calculate the target position based on the direction
+    int targetX = move->x + move->direction.dx;
+    int targetY = move->y + move->direction.dy;
+
+    // Check if the target position is within bounds
+    if (!isInBounds(grid, targetX, targetY)) {
+        return false;  // Out of bounds after applying direction
+    }
+
+    // Calculate the index in the 1D grid for the current position and target position
+    int currentIndex = getGridIndex(grid, move->x, move->y);
+    int targetIndex = getGridIndex(grid, targetX, targetY);
+
+    // Check if the action is valid (e.g., add or subtract)
+    if (move->add) {
+        // Add action: Check if the target cell is empty (0 means empty in this example)
+        if (grid->values[targetIndex] == 0) {
+            return false;  // Cannot add to an empty cell
+        }
+    } else {
+        // Subtract action: Ensure the cell is non-zero to subtract
+        if (grid->values[currentIndex] == 0) {
+            return false;  // Cannot subtract from an empty cell
+        }
+    }
+    */
+
+    // If all checks pass, the move is valid
+    return true;
 }

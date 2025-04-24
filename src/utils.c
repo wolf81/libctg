@@ -1,18 +1,20 @@
 #include <string.h>
 #include <ctype.h>
 
-void trim(char *str) {
+char* trim(char *str) {
     // trim leading whitespace
     while (*str && isspace((unsigned char)*str)) {
         str++;
     }
 
     // trim trailing whitespace
-    if (*str) {
-        char *end = str + strlen(str) - 1;
-        while (end > str && isspace((unsigned char)*end)) {
-            end--;
-        }
-        *(end + 1) = '\0';
+    char *end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) {
+        end--;
     }
+
+    // null terminate
+    *(end + 1) = '\0';
+
+    return str;
 }

@@ -1,3 +1,5 @@
+#include <stdbool.h>
+
 #ifndef LIBCTG_H
 #define LIBCTG_H
 
@@ -15,17 +17,31 @@ typedef enum {
 
 LIBCTG_API ErrorCode last_error;
 
-typedef struct
-{
+typedef struct {
     int width;
     int height;
+    int length;
     int* values;
 } Grid;
+
+typedef struct {
+    int dx;
+    int dy;
+} Direction;
+
+typedef struct {
+    int x;
+    int y;
+    Direction dir;
+    bool add;
+} Move;
 
 LIBCTG_API Grid* parseGrid(const char* input);
 
 LIBCTG_API void printGrid(Grid* grid);
 
 LIBCTG_API void freeGrid(Grid* grid);
+
+LIBCTG_API bool isValidMove(Grid* grid, Move* move);
 
 #endif
