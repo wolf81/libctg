@@ -21,16 +21,23 @@ local input = [[
     0 0 0 0 0 0 0 0
     0 0 0 0 0 0 0 7
 ]]
-    
-local grid = ctg.parseGrid(input)
 
-grid:print() --> 0 0 0 0 0 0 0 0
-			 --> 7 0 0 0 0 0 0 7
-			 --> 3 1 2 0 0 0 0 0
-			 --> 0 0 0 0 0 0 0 0
-			 --> 0 0 0 0 0 0 0 7
+-- grid returns light user data
+local grid = ctg.parseGrid(input) --> table: 0000000000A73540
 
-grid:getValue(8, 5) --> 7
+-- use print to view grid layout
+grid:print()    --> 0 0 0 0 0 0 0 0
+                --> 7 0 0 0 0 0 0 7
+                --> 3 1 2 0 0 0 0 0
+                --> 0 0 0 0 0 0 0 0
+                --> 0 0 0 0 0 0 0 7
 
-grid:isValidMove(8, 5, 'R', false) --> false
+-- check the value at a coordinate, will return -1 if out of bounds
+local value = grid:getValue(8, 5) --> 7
+
+-- check the size of the grid
+local w, h = grid:getSize() --> 8, 5
+
+-- check if a move is possible from a coord, with a direction
+local can_move = grid:isValidMove(8, 5, 'R', false) --> false
 ```

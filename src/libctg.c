@@ -121,6 +121,11 @@ bool isValidMove(Grid* grid, Move* move) {
     int index = move->y * grid->width + move->x;
     int value = grid->values[index];
 
+    // Cannot move if value is 0
+    if (value == 0) {
+        return false;
+    }
+
     // Calculate the target position based on the direction
     int tx = move->x + move->dir.dx * value;
     int ty = move->y + move->dir.dy * value;
@@ -137,7 +142,7 @@ bool isValidMove(Grid* grid, Move* move) {
     return true;
 }
 
-LIBCTG_API int getValue(Grid* grid, int x, int y) {
+int getValue(Grid* grid, int x, int y) {
     if (!inBounds(grid, x, y)) {
         return -1;
     }

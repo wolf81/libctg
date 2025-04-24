@@ -70,7 +70,6 @@ static int l_isValidMove(lua_State* L) {
     int x = (int)luaL_checkinteger(L, 2) - 1; // Get x coordinate
     int y = (int)luaL_checkinteger(L, 3) - 1; // Get y coordinate
     const char *dir_str = luaL_checkstring(L, 4);  // Get direction string ('U', 'D', 'L', 'R')
-    bool add = lua_toboolean(L, 5);    // Get the add flag
 
     // Get the Grid pointer from the table
     lua_getfield(L, 1, "grid_ptr");
@@ -99,7 +98,7 @@ static int l_isValidMove(lua_State* L) {
     }
 
     // Create a Move struct and fill it
-    Move move = {x, y, dir, add};
+    Move move = {x, y, dir, true};
 
     // Call the C function to check if the move is valid
     if (isValidMove(grid, &move)) {
@@ -126,6 +125,23 @@ static int l_freeGrid(lua_State* L) {
     return 0;  // No return value
 }
 
+static int l_getSize(lua_State* L) {
+    luaL_checktype(L, 1, LUA_TTABLE);  // Ensure the argument is a table (Grid object)
+
+    // Get the Grid pointer from the table
+    lua_getfield(L, 1, "grid_ptr");
+    Grid* grid = (Grid*)lua_touserdata(L, -1);
+
+    if (grid == NULL) {
+        lua_pushstring(L, "Invalid Grid object");
+        return 1;
+    }
+
+    lua_pushinteger(L, grid->width);
+    lua_pushinteger(L, grid->height);
+    return 2;
+}
+
 static void createGridMetatable(lua_State* L) {
     if (luaL_newmetatable(L, GRID_MT)) {
         // Set __gc to freeGrid
@@ -143,6 +159,9 @@ static void createGridMetatable(lua_State* L) {
 
         lua_pushcfunction(L, l_getValue);
         lua_setfield(L, -2, "getValue");
+
+        lua_pushcfunction(L, l_getSize);
+        lua_setfield(L, -2, "getSize");
 
         // Assign method table to __index
         lua_setfield(L, -2, "__index");
