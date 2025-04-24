@@ -18,5 +18,7 @@ int main() {
 
     printGrid(grid);
 
+    freeGrid(grid);
+
     return EXIT_SUCCESS;
 }

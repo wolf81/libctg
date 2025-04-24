@@ -18,7 +18,7 @@ Grid* newGrid(int width, int height, int* values) {
     grid->height = height;
     grid->values = (int*)malloc(sizeof(int) * num_values);
     if (grid->values == NULL) {
-        free(grid);
+        freeGrid(grid);
         last_error = ERR_MEMORY_ALLOCATION;
         return NULL;
     }
@@ -28,6 +28,13 @@ Grid* newGrid(int width, int height, int* values) {
     }
 
     return grid;
+}
+
+void freeGrid(Grid* grid) {
+    if (grid) {
+        free(grid->values);
+        free(grid);
+    }
 }
 
 void printGrid(Grid* grid) {
