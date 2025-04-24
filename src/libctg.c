@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "libctg.h"
+#include "utils.c"
 
 ErrorCode last_error = SUCCESS;
 
@@ -47,6 +48,10 @@ void printGrid(Grid* grid) {
 }
 
 Grid* parseGrid(const char* input) {
+    // trim leading & trailing whitespace and add newline at end for parsing
+    trim((char*)input);
+    strcat(input, "\n");
+
     // Parse width & height from first line.
     int width = 0, height = 0;
     if (sscanf(input, "%d %d\n", &width, &height) != 2) {
