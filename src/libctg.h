@@ -38,12 +38,12 @@ typedef struct {
 
 LIBCTG_API Grid* parseGrid(const char* input);
 
-LIBCTG_API void printGrid(Grid* grid);
+LIBCTG_API void printGrid(const Grid* grid);
 
 LIBCTG_API void freeGrid(Grid* grid);
 
-LIBCTG_API int getValue(Grid* grid, int x, int y);
+LIBCTG_API int getValue(const Grid* grid, int x, int y);
 
-LIBCTG_API bool isValidMove(Grid* grid, Move* move);
+LIBCTG_API bool isValidMove(const Grid* grid, Move* move);
 
 #endif

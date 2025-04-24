@@ -39,7 +39,7 @@ void freeGrid(Grid* grid) {
     }
 }
 
-void printGrid(Grid* grid) {
+void printGrid(const Grid* grid) {
     for (int y = 0; y < grid->height; y++) {
         for (int x = 0; x < grid->width; x++) {
             printf("%d ", grid->values[y * grid->width + x]);
@@ -105,14 +105,14 @@ Grid* parseGrid(const char* input) {
     return grid;
 }
 
-static bool inBounds(Grid* grid, int x, int y) {
+static bool inBounds(const Grid* grid, int x, int y) {
     // Calculate the index for (x, y) in the 1D array
     int index = y * grid->width + x;
     return (index >= 0 && index < grid->length);
 }
 
 // Check if a move is valid
-bool isValidMove(Grid* grid, Move* move) {
+bool isValidMove(const Grid* grid, Move* move) {
     // Check if the move is within the bounds of the grid
     if (!inBounds(grid, move->x, move->y)) {
         return false;  // Out of bounds
@@ -142,7 +142,7 @@ bool isValidMove(Grid* grid, Move* move) {
     return true;
 }
 
-int getValue(Grid* grid, int x, int y) {
+int getValue(const Grid* grid, int x, int y) {
     if (!inBounds(grid, x, y)) {
         return -1;
     }

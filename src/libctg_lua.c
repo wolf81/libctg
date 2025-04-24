@@ -125,6 +125,36 @@ static int l_freeGrid(lua_State* L) {
     return 0;  // No return value
 }
 
+static int l_getValues(lua_State* L) {
+    luaL_checktype(L, 1, LUA_TTABLE);  // Ensure the argument is a table (Grid object)
+
+    // Get the Grid pointer from the table
+    lua_getfield(L, 1, "grid_ptr");
+    Grid* grid = (Grid*)lua_touserdata(L, -1);
+    
+    if (grid == NULL) {
+        lua_pushstring(L, "Invalid Grid object");
+        return 1;
+    }
+
+    lua_newtable(L);  // Create outer table (rows)
+
+    for (int y = 0; y < grid->height; ++y) {
+        lua_newtable(L);  // Create row table
+
+        for (int x = 0; x < grid->width; ++x) {
+            int value = grid->values[y * grid->width + x];
+
+            lua_pushinteger(L, value);       // push value
+            lua_rawseti(L, -2, x + 1);       // row[x+1] = value
+        }
+
+        lua_rawseti(L, -2, y + 1);  // outer[y+1] = row
+    }
+
+    return 1;  // Return the 2D table
+}
+
 static int l_getSize(lua_State* L) {
     luaL_checktype(L, 1, LUA_TTABLE);  // Ensure the argument is a table (Grid object)
 
@@ -159,6 +189,9 @@ static void createGridMetatable(lua_State* L) {
 
         lua_pushcfunction(L, l_getValue);
         lua_setfield(L, -2, "getValue");
+
+        lua_pushcfunction(L, l_getValues);
+        lua_setfield(L, -2, "getValues");
 
         lua_pushcfunction(L, l_getSize);
         lua_setfield(L, -2, "getSize");
