@@ -1,0 +1,67 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:  # Allow manual trigger from the GitHub UI
+
+jobs:
+  # build-windows:
+  #   name: Build on Windows
+  #   runs-on: windows-latest
+
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #       with:
+  #         submodules: recursive
+
+  #     - name: Build LuaJIT
+  #       run: ./build_luajit.bat
+  #       shell: bash
+
+  #     - name: Build libctg
+  #       shell: cmd
+  #       run: |
+  #         mkdir build
+  #         cd build
+  #         cmake .. -DCMAKE_BUILD_TYPE=Release
+  #         cmake --build . --config Release
+
+  #     - name: Upload Windows artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: ctg-windows
+  #         path: build/Release/libctg.dll
+
+  build-macos:
+    name: Build on macOS
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Make LuaJIT build script executable
+        run: chmod +x ./build_luajit.sh
+
+      - name: Build LuaJIT
+        run: ./build_luajit.sh
+        shell: bash
+
+      - name: Build libctg
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+          cmake --build . --config Release
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctg-macos
+          path: build/libctg.dylib
+          
