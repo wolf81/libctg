@@ -39,5 +39,5 @@ local value = grid:getValue(8, 5) --> 7
 local w, h = grid:getSize() --> 8, 5
 
 -- check if a move is possible from a coord, with a direction
-local can_move = grid:isValidMove(8, 5, 'R', false) --> false
+local can_move = grid:isValidMove(8, 5, 'R') --> false
 ```
