@@ -42,6 +42,8 @@ LIBCTG_API void printGrid(Grid* grid);
 
 LIBCTG_API void freeGrid(Grid* grid);
 
+LIBCTG_API int getValue(Grid* grid, int x, int y);
+
 LIBCTG_API bool isValidMove(Grid* grid, Move* move);
 
 #endif

@@ -45,6 +45,26 @@ static int l_printGrid(lua_State* L) {
     return 0;  // No return value
 }
 
+static int l_getValue(lua_State* L) {
+    luaL_checktype(L, 1, LUA_TTABLE);  // Ensure the argument is a table (Grid object)
+    int x = (int)luaL_checkinteger(L, 2) - 1; // Get x coordinate
+    int y = (int)luaL_checkinteger(L, 3) - 1; // Get y coordinate
+
+    // Get the Grid pointer from the table
+    lua_getfield(L, 1, "grid_ptr");
+    Grid* grid = (Grid*)lua_touserdata(L, -1);
+
+    if (grid == NULL) {
+        lua_pushstring(L, "Invalid Grid object");
+        return 1;
+    }
+
+    int value = getValue(grid, x, y);
+    lua_pushinteger(L, value);
+
+    return 1;
+}
+
 static int l_isValidMove(lua_State* L) {
     luaL_checktype(L, 1, LUA_TTABLE);  // Ensure the argument is a table (Grid object)
     int x = (int)luaL_checkinteger(L, 2) - 1; // Get x coordinate
@@ -65,9 +85,9 @@ static int l_isValidMove(lua_State* L) {
     Direction dir = {0, 0};
     if (dir_str != NULL) {
         if (dir_str[0] == 'U') {
-            dir.dy = 1;
-        } else if (dir_str[0] == 'D') {
             dir.dy = -1;
+        } else if (dir_str[0] == 'D') {
+            dir.dy = 1;
         } else if (dir_str[0] == 'L') {
             dir.dx = -1;
         } else if (dir_str[0] == 'R') {
@@ -120,6 +140,9 @@ static void createGridMetatable(lua_State* L) {
 
         lua_pushcfunction(L, l_isValidMove);
         lua_setfield(L, -2, "isValidMove");
+
+        lua_pushcfunction(L, l_getValue);
+        lua_setfield(L, -2, "getValue");
 
         // Assign method table to __index
         lua_setfield(L, -2, "__index");

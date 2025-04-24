@@ -118,34 +118,30 @@ bool isValidMove(Grid* grid, Move* move) {
         return false;  // Out of bounds
     }
 
-    /*
+    int index = move->y * grid->width + move->x;
+    int value = grid->values[index];
+
     // Calculate the target position based on the direction
-    int targetX = move->x + move->direction.dx;
-    int targetY = move->y + move->direction.dy;
+    int tx = move->x + move->dir.dx * value;
+    int ty = move->y + move->dir.dy * value;
+
+    if (tx < 0 || tx > grid->width) {
+        return false;
+    }
 
     // Check if the target position is within bounds
-    if (!isInBounds(grid, targetX, targetY)) {
+    if (!inBounds(grid, tx, ty)) {
         return false;  // Out of bounds after applying direction
     }
 
-    // Calculate the index in the 1D grid for the current position and target position
-    int currentIndex = getGridIndex(grid, move->x, move->y);
-    int targetIndex = getGridIndex(grid, targetX, targetY);
-
-    // Check if the action is valid (e.g., add or subtract)
-    if (move->add) {
-        // Add action: Check if the target cell is empty (0 means empty in this example)
-        if (grid->values[targetIndex] == 0) {
-            return false;  // Cannot add to an empty cell
-        }
-    } else {
-        // Subtract action: Ensure the cell is non-zero to subtract
-        if (grid->values[currentIndex] == 0) {
-            return false;  // Cannot subtract from an empty cell
-        }
-    }
-    */
-
-    // If all checks pass, the move is valid
     return true;
+}
+
+LIBCTG_API int getValue(Grid* grid, int x, int y) {
+    if (!inBounds(grid, x, y)) {
+        return -1;
+    }
+
+    int index = y * grid->width + x;
+    return grid->values[index];    
 }
