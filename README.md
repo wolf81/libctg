@@ -43,14 +43,11 @@ local w, h = grid:getSize() --> 8, 5
 -- check if a move is possible from a coord, with a direction
 local can_move = grid:isValidMove(8, 5, 'R') --> false
 
--- get the values in the grid, row by row and column by column
-local s = ''
-for _, row in ipairs(grid:getValues()) do
-    s = s .. table.concat(row, ',') .. '\n'
+-- check if a grid is solved, which is true if all values are 0
+local is_solved = grid:isSolved() --> false
+
+-- iterate over the values in the grid
+for x, y, value in ipairs(grid:iter()) do
+    print(string.format('%d, %d: %d', x, y, value)) --> 1, 1: 0 ... 8, 5: 7
 end
-print(s)    --> 0,0,0,0,0,0,0,0,
-            --> 7,0,0,0,0,0,0,7,
-            --> 3,1,2,0,0,0,0,0,
-            --> 0,0,0,0,0,0,0,0,
-            --> 0,0,0,0,0,0,1,7,
 ```

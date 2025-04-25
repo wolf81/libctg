@@ -46,4 +46,6 @@ LIBCTG_API int getValue(const Grid* grid, int x, int y);
 
 LIBCTG_API bool isValidMove(const Grid* grid, Move* move);
 
+LIBCTG_API bool isSolved(const Grid* grid);
+
 #endif

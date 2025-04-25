@@ -68,6 +68,27 @@ static int l_getValue(lua_State* L) {
     return 1;
 }
 
+static int l_isSolved(lua_State* L) {
+    // Ensure the argument is a userdata (Grid object)
+    luaL_checktype(L, 1, LUA_TUSERDATA);
+
+    // Get the Grid pointer from the userdata
+    Grid* grid = *(Grid**)luaL_checkudata(L, 1, GRID_MT);  // Use the correct metatable
+
+    if (grid == NULL) {
+        lua_pushstring(L, "Invalid Grid object");
+        return 1;
+    }
+
+    if (isSolved(grid)) {
+        lua_pushboolean(L, 1);  // Return true if the move is valid
+    } else {
+        lua_pushboolean(L, 0);  // Return false if the move is invalid
+    }
+
+    return 1;
+}
+
 static int l_isValidMove(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
@@ -129,36 +150,6 @@ static int l_freeGrid(lua_State* L) {
     return 0;  // No return value
 }
 
-static int l_getValues(lua_State* L) {
-    // Ensure the argument is a userdata (Grid object)
-    luaL_checktype(L, 1, LUA_TUSERDATA);
-
-    // Get the Grid pointer from the userdata
-    Grid* grid = *(Grid**)luaL_checkudata(L, 1, GRID_MT);  // Use the correct metatable
-    
-    if (grid == NULL) {
-        lua_pushstring(L, "Invalid Grid object");
-        return 1;
-    }
-
-    lua_newtable(L);  // Create outer table (rows)
-
-    for (int y = 0; y < grid->height; ++y) {
-        lua_newtable(L);  // Create row table
-
-        for (int x = 0; x < grid->width; ++x) {
-            int value = grid->values[y * grid->width + x];
-
-            lua_pushinteger(L, value);       // push value
-            lua_rawseti(L, -2, x + 1);       // row[x+1] = value
-        }
-
-        lua_rawseti(L, -2, y + 1);  // outer[y+1] = row
-    }
-
-    return 1;  // Return the 2D table
-}
-
 static int l_getSize(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
@@ -176,19 +167,53 @@ static int l_getSize(lua_State* L) {
     return 2;
 }
 
+static int l_pairsIter(lua_State* L) {
+    Grid* grid = (Grid*)lua_touserdata(L, lua_upvalueindex(1));
+    int index = lua_tointeger(L, lua_upvalueindex(2));
+
+    if (index >= grid->length) {
+        return 0; // end iteration
+    }
+
+    int x = (index % grid->width) + 1;
+    int y = (index / grid->width) + 1;
+    int value = grid->values[index];
+
+    // Update index for next call
+    lua_pushinteger(L, index + 1);
+    lua_replace(L, lua_upvalueindex(2));
+
+    lua_pushinteger(L, x);
+    lua_pushinteger(L, y);
+    lua_pushinteger(L, value);
+    return 3;
+}
+
+// The __pairs metamethod
+static int l_pairs(lua_State* L) {
+    Grid* grid = *(Grid**)luaL_checkudata(L, 1, GRID_MT);
+
+    lua_pushlightuserdata(L, grid);  // upvalue 1
+    lua_pushinteger(L, 0);           // upvalue 2 (start index)
+    lua_pushcclosure(L, l_pairsIter, 2);
+    return 1; // returns the closure
+}
+
 static void createGridMetatable(lua_State* L) {
     // Create the metatable for the grid (returns 1 if the metatable is new)
     if (luaL_newmetatable(L, GRID_MT)) {
-        // Set __gc to freeGrid (garbage collection for userdata)
+        // assign meta-methods
         lua_pushcfunction(L, l_freeGrid);
-        lua_setfield(L, -2, "__gc");
+        lua_setfield(L, -2, "__gc"); // automatic garbage collection
 
-        // Assign functions to methods
         lua_pushcfunction(L, l_toString);  // Push the toString function
         lua_setfield(L, -2, "__tostring"); // Assign it as the __tostring metamethod
 
         // Create method table (a table to store methods)
         lua_newtable(L);  // Create a new table to store methods
+
+        lua_pushcfunction(L, l_pairs);
+        lua_setfield(L, -2, "iter");
 
         lua_pushcfunction(L, l_isValidMove);
         lua_setfield(L, -2, "isValidMove");
@@ -196,8 +221,8 @@ static void createGridMetatable(lua_State* L) {
         lua_pushcfunction(L, l_getValue);
         lua_setfield(L, -2, "getValue");
 
-        lua_pushcfunction(L, l_getValues);
-        lua_setfield(L, -2, "getValues");
+        lua_pushcfunction(L, l_isSolved);
+        lua_setfield(L, -2, "isSolved");
 
         lua_pushcfunction(L, l_getSize);
         lua_setfield(L, -2, "getSize");

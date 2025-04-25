@@ -160,6 +160,15 @@ bool isValidMove(const Grid* grid, Move* move) {
     return true;
 }
 
+bool isSolved(const Grid* grid) {
+    for (int i = 0; i < grid->length; i++) {
+        if (grid->values[i] != 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
 int getValue(const Grid* grid, int x, int y) {
     if (!inBounds(grid, x, y)) {
         return -1;
