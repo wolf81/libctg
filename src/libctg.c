@@ -84,10 +84,13 @@ Grid* parseGrid(const char* input) {
         strncpy(line, ptr, line_len);
         line[line_len] = '\0';
 
-        // Split the line into tokens and add to the grid
-        char *token = strtok(line, " ");
+        // Trim the line (removes leading/trailing whitespace)
+        char *trimmed = trim(line);
+
+        // Tokenize the trimmed line
+        char *token = strtok(trimmed, " ");
         while (token) {
-            values[i++] = atoi(token);  // Convert token to integer
+            values[i++] = atoi(token);
             token = strtok(NULL, " ");
         }
 
