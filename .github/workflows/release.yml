@@ -19,7 +19,6 @@ jobs:
 
       - name: Build LuaJIT
         run: ./build_luajit.bat
-        shell: bash
 
       - name: Build libctg
         shell: cmd
