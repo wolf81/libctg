@@ -1,5 +1,6 @@
 #include <lua.h>
 #include <lauxlib.h>
+#include <stdlib.h>
 #include "libctg.h"
 
 #define GRID_MT "libctg.grid_mt" // Grid metatable
@@ -7,52 +8,54 @@
 static int l_parseGrid(lua_State* L) {
     const char* input = luaL_checkstring(L, 1);
 
+    // Parse the grid from the input string
     Grid* grid = parseGrid(input);
 
     if (!grid) {
-        lua_pushnil(L);
-        lua_pushstring(L, "Failed to parse grid");        
+        lua_pushnil(L);  // Return nil to indicate failure
+        lua_pushstring(L, "Failed to parse grid");
         return 2;
     }
 
-    // Create a new table and set it as a Grid object
-    lua_newtable(L);
-    lua_pushlightuserdata(L, grid);  // Push the Grid pointer as a light userdata
-    lua_setfield(L, -2, "grid_ptr");  // Set the Grid pointer in the table
+    // Create a new userdata to hold the Grid object
+    Grid** grid_ptr = (Grid**)lua_newuserdata(L, sizeof(Grid*));  // Create userdata for Grid pointer
+    *grid_ptr = grid;  // Set the Grid pointer in the userdata
 
-    // Set the metatable for the Grid object
-    luaL_getmetatable(L, GRID_MT);
-    lua_setmetatable(L, -2);
+    // Set the metatable for the userdata (this ensures the __tostring metamethod is available)
+    luaL_getmetatable(L, GRID_MT);  // Get the metatable for the Grid
+    lua_setmetatable(L, -2);        // Set the metatable for the userdata
 
-    return 1;  // Return the Grid object
+    return 1;  // Return the userdata (Grid object) to Lua
 }
 
-static int l_printGrid(lua_State* L) {
-    luaL_checktype(L, 1, LUA_TTABLE);  // Ensure the argument is a table (Grid object)
+static int l_toString(lua_State* L) {
+    // Ensure the argument is a userdata (Grid object)
+    luaL_checktype(L, 1, LUA_TUSERDATA);
 
-    // Get the Grid pointer from the table
-    lua_getfield(L, 1, "grid_ptr");
-    Grid* grid = (Grid*)lua_touserdata(L, -1);
+    // Get the Grid pointer from the userdata
+    Grid* grid = *(Grid**)luaL_checkudata(L, 1, GRID_MT);  // Use the correct metatable
 
     if (grid == NULL) {
         lua_pushstring(L, "Invalid Grid object");
         return 1;
     }
 
-    // Call the C function to print the grid
-    printGrid(grid);
+    char* s = toString(grid);  // Convert Grid to string using toString function
+    lua_pushstring(L, s);
+    free(s);  // Free the string returned by toString
 
-    return 0;  // No return value
+    return 1;  // Return the string to Lua
 }
 
 static int l_getValue(lua_State* L) {
-    luaL_checktype(L, 1, LUA_TTABLE);  // Ensure the argument is a table (Grid object)
+    // Ensure the argument is a userdata (Grid object)
+    luaL_checktype(L, 1, LUA_TUSERDATA);
+
     int x = (int)luaL_checkinteger(L, 2) - 1; // Get x coordinate
     int y = (int)luaL_checkinteger(L, 3) - 1; // Get y coordinate
 
-    // Get the Grid pointer from the table
-    lua_getfield(L, 1, "grid_ptr");
-    Grid* grid = (Grid*)lua_touserdata(L, -1);
+    // Get the Grid pointer from the userdata
+    Grid* grid = *(Grid**)luaL_checkudata(L, 1, GRID_MT);  // Use the correct metatable
 
     if (grid == NULL) {
         lua_pushstring(L, "Invalid Grid object");
@@ -66,14 +69,15 @@ static int l_getValue(lua_State* L) {
 }
 
 static int l_isValidMove(lua_State* L) {
-    luaL_checktype(L, 1, LUA_TTABLE);  // Ensure the argument is a table (Grid object)
+    // Ensure the argument is a userdata (Grid object)
+    luaL_checktype(L, 1, LUA_TUSERDATA);
+
     int x = (int)luaL_checkinteger(L, 2) - 1; // Get x coordinate
     int y = (int)luaL_checkinteger(L, 3) - 1; // Get y coordinate
     const char *dir_str = luaL_checkstring(L, 4);  // Get direction string ('U', 'D', 'L', 'R')
 
-    // Get the Grid pointer from the table
-    lua_getfield(L, 1, "grid_ptr");
-    Grid* grid = (Grid*)lua_touserdata(L, -1);
+    // Get the Grid pointer from the userdata
+    Grid* grid = *(Grid**)luaL_checkudata(L, 1, GRID_MT);  // Use the correct metatable
 
     if (grid == NULL) {
         lua_pushstring(L, "Invalid Grid object");
@@ -111,11 +115,11 @@ static int l_isValidMove(lua_State* L) {
 }
 
 static int l_freeGrid(lua_State* L) {
-    luaL_checktype(L, 1, LUA_TTABLE);  // Ensure the argument is a table (Grid object)
+    // Ensure the argument is a userdata (Grid object)
+    luaL_checktype(L, 1, LUA_TUSERDATA);
 
-    // Get the Grid pointer from the table
-    lua_getfield(L, 1, "grid_ptr");
-    Grid* grid = (Grid*)lua_touserdata(L, -1);
+    // Get the Grid pointer from the userdata
+    Grid* grid = *(Grid**)luaL_checkudata(L, 1, GRID_MT);  // Use the correct metatable
 
     if (grid != NULL) {
         // Call the C function to free the grid
@@ -126,11 +130,11 @@ static int l_freeGrid(lua_State* L) {
 }
 
 static int l_getValues(lua_State* L) {
-    luaL_checktype(L, 1, LUA_TTABLE);  // Ensure the argument is a table (Grid object)
+    // Ensure the argument is a userdata (Grid object)
+    luaL_checktype(L, 1, LUA_TUSERDATA);
 
-    // Get the Grid pointer from the table
-    lua_getfield(L, 1, "grid_ptr");
-    Grid* grid = (Grid*)lua_touserdata(L, -1);
+    // Get the Grid pointer from the userdata
+    Grid* grid = *(Grid**)luaL_checkudata(L, 1, GRID_MT);  // Use the correct metatable
     
     if (grid == NULL) {
         lua_pushstring(L, "Invalid Grid object");
@@ -156,11 +160,11 @@ static int l_getValues(lua_State* L) {
 }
 
 static int l_getSize(lua_State* L) {
-    luaL_checktype(L, 1, LUA_TTABLE);  // Ensure the argument is a table (Grid object)
+    // Ensure the argument is a userdata (Grid object)
+    luaL_checktype(L, 1, LUA_TUSERDATA);
 
-    // Get the Grid pointer from the table
-    lua_getfield(L, 1, "grid_ptr");
-    Grid* grid = (Grid*)lua_touserdata(L, -1);
+    // Get the Grid pointer from the userdata
+    Grid* grid = *(Grid**)luaL_checkudata(L, 1, GRID_MT);  // Use the correct metatable
 
     if (grid == NULL) {
         lua_pushstring(L, "Invalid Grid object");
@@ -173,16 +177,18 @@ static int l_getSize(lua_State* L) {
 }
 
 static void createGridMetatable(lua_State* L) {
+    // Create the metatable for the grid (returns 1 if the metatable is new)
     if (luaL_newmetatable(L, GRID_MT)) {
-        // Set __gc to freeGrid
+        // Set __gc to freeGrid (garbage collection for userdata)
         lua_pushcfunction(L, l_freeGrid);
         lua_setfield(L, -2, "__gc");
 
-        // Create method table
-        lua_newtable(L);
+        // Assign functions to methods
+        lua_pushcfunction(L, l_toString);  // Push the toString function
+        lua_setfield(L, -2, "__tostring"); // Assign it as the __tostring metamethod
 
-        lua_pushcfunction(L, l_printGrid);
-        lua_setfield(L, -2, "print");
+        // Create method table (a table to store methods)
+        lua_newtable(L);  // Create a new table to store methods
 
         lua_pushcfunction(L, l_isValidMove);
         lua_setfield(L, -2, "isValidMove");
@@ -196,11 +202,16 @@ static void createGridMetatable(lua_State* L) {
         lua_pushcfunction(L, l_getSize);
         lua_setfield(L, -2, "getSize");
 
-        // Assign method table to __index
+        // Assign the method table to the __index field of the metatable
         lua_setfield(L, -2, "__index");
+
+        // Pop the method table, we no longer need it on the stack
+        lua_pop(L, 1);
     }
 
-    lua_pop(L, 1);  // pop metatable
+    // At this point, the metatable is on the stack.
+    // We can now pop it from the stack (clean up).
+    lua_pop(L, 1);
 }
 
 static int l_getLastError(lua_State* L) {

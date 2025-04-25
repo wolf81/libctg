@@ -23,10 +23,10 @@ if (WIN32)
 endif()
 
 if(APPLE)
-    if (NOT EXISTS "${LUAJIT_BUILD_DIR}/libluajit.a")
-        message(FATAL_ERROR "Missing library ${LUAJIT_BUILD_DIR}/libluajit.a - execute build_luajit.sh")
+    if (NOT EXISTS "${LUAJIT_SRC_DIR}/libluajit.a")
+        message(FATAL_ERROR "Missing library ${LUAJIT_SRC_DIR}/libluajit.a - execute build_luajit.sh")
     else()
-        set(LUAJIT_LIB "${LUAJIT_BUILD_DIR}/libluajit.a")
+        set(LUAJIT_LIB "${LUAJIT_SRC_DIR}/libluajit.a")
     endif()
 endif()
 

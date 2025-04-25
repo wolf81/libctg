@@ -1,20 +1,26 @@
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
-char* trim(char *str) {
-    // trim leading whitespace
-    while (*str && isspace((unsigned char)*str)) {
-        str++;
-    }
+char *trim(const char *str) {
+    if (str == NULL) return NULL;
 
-    // trim trailing whitespace
-    char *end = str + strlen(str) - 1;
-    while (end > str && isspace((unsigned char)*end)) {
-        end--;
-    }
+    // Skip leading whitespace
+    while (isspace((unsigned char)*str)) str++;
 
-    // null terminate
-    *(end + 1) = '\0';
+    // Find the end of the string
+    const char *end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) end--;
 
-    return str;
+    // Length of the trimmed string
+    size_t len = end - str + 1;
+
+    // Allocate new string
+    char *trimmed = malloc(len + 1);
+    if (!trimmed) return NULL;
+
+    strncpy(trimmed, str, len);
+    trimmed[len] = '\0';
+
+    return trimmed;
 }

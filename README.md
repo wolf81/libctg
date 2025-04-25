@@ -24,15 +24,15 @@ local input = [[
     0 0 0 0 0 0 0 7
 ]]
 
--- grid returns light user data
-local grid = ctg.parseGrid(input) --> table: 0000000000A73540
+-- create a grid object by parsing a grid string
+local grid = ctg.parseGrid(input)
 
--- use print to view grid layout
-grid:print()    --> 0 0 0 0 0 0 0 0
-                --> 7 0 0 0 0 0 0 7
-                --> 3 1 2 0 0 0 0 0
-                --> 0 0 0 0 0 0 0 0
-                --> 0 0 0 0 0 0 0 7
+-- use Lua's print() function to view the grid layout
+print(grid) --> 0 0 0 0 0 0 0 0
+            --> 7 0 0 0 0 0 0 7
+            --> 3 1 2 0 0 0 0 0
+            --> 0 0 0 0 0 0 0 0
+            --> 0 0 0 0 0 0 0 7
 
 -- check the value at a coordinate, will return -1 if out of bounds
 local value = grid:getValue(8, 5) --> 7

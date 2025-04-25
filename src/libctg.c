@@ -39,13 +39,28 @@ void freeGrid(Grid* grid) {
     }
 }
 
-void printGrid(const Grid* grid) {
+char* toString(const Grid* grid) {
+    // Estimate needed buffer size:
+    // max 3 characters per int, one space, and one newline per row
+    int estimatedSize = grid->width * grid->height * 5 + grid->height + 1;
+    char* buffer = malloc(estimatedSize);
+    if (!buffer) return NULL;
+
+    char* ptr = buffer;
+    int remaining = estimatedSize;
+
     for (int y = 0; y < grid->height; y++) {
         for (int x = 0; x < grid->width; x++) {
-            printf("%d ", grid->values[y * grid->width + x]);
+            int written = snprintf(ptr, remaining, "%d ", grid->values[y * grid->width + x]);
+            ptr += written;
+            remaining -= written;
         }
-        printf("\n");
+        *ptr++ = '\n';
+        remaining--;
     }
+    *ptr = '\0';  // Null-terminate the string
+
+    return buffer;
 }
 
 Grid* parseGrid(const char* input) {

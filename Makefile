@@ -11,7 +11,7 @@ endif
 
 SRCDIR = src
 TARGET = $(BUILDDIR)/ctg_main
-OBJS = $(BUILDDIR)/main.o
+OBJS = $(BUILDDIR)/main.o $(BUILDDIR)/libctg.o
 
 .PHONY: all clean debug release run
 

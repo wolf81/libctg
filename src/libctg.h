@@ -38,7 +38,7 @@ typedef struct {
 
 LIBCTG_API Grid* parseGrid(const char* input);
 
-LIBCTG_API void printGrid(const Grid* grid);
+LIBCTG_API char* toString(const Grid* grid);
 
 LIBCTG_API void freeGrid(Grid* grid);
 

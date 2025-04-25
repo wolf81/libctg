@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "libctg.h"
 
 int main() {
@@ -16,7 +17,10 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    printGrid(grid);
+    char* grid_string = toString(grid);
+    if (grid_string) {
+        printf("%s", grid_string);        
+    }
 
     freeGrid(grid);
 
