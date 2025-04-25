@@ -40,14 +40,20 @@ local value = grid:getValue(8, 5) --> 7
 -- check the size of the grid
 local w, h = grid:getSize() --> 8, 5
 
--- check if a move is possible from a coord, with a direction
-local can_move = grid:isValidMove(8, 5, 'R') --> false
+-- we can create a move as such ...
+local move = { 3, 3, 'L', false } -- x, y, direction, add?
+
+-- check if a move is possible
+local can_move = grid:isValidMove(unpack(move)) --> true
+
+-- apply the move; returns -1 if the move was invalid, otherwise value in target cell after add/subtract
+local v = grid:applyMove(unpack(move)) --> 1
 
 -- check if a grid is solved, which is true if all values are 0
 local is_solved = grid:isSolved() --> false
 
 -- iterate over the values in the grid
-for x, y, value in ipairs(grid:iter()) do
+for x, y, value in grid:iter() do
     print(string.format('%d, %d: %d', x, y, value)) --> 1, 1: 0 ... 8, 5: 7
 end
 ```

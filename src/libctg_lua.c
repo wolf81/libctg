@@ -89,6 +89,50 @@ static int l_isSolved(lua_State* L) {
     return 1;
 }
 
+static int l_applyMove(lua_State* L) {
+    // Ensure the argument is a userdata (Grid object)
+    luaL_checktype(L, 1, LUA_TUSERDATA);
+
+    int x = (int)luaL_checkinteger(L, 2) - 1; // Get x coordinate
+    int y = (int)luaL_checkinteger(L, 3) - 1; // Get y coordinate
+    const char *dir_str = luaL_checkstring(L, 4);  // Get direction string ('U', 'D', 'L', 'R')
+
+    luaL_checktype(L, 5, LUA_TBOOLEAN);  // ensure it's a boolean
+    int add = lua_toboolean(L, 5);
+
+    // Get the Grid pointer from the userdata
+    Grid* grid = *(Grid**)luaL_checkudata(L, 1, GRID_MT);  // Use the correct metatable
+
+    if (grid == NULL) {
+        lua_pushstring(L, "Invalid Grid object");
+        return 1;
+    }
+    
+    // Convert direction string to Direction struct
+    Direction dir = {0, 0};
+    if (dir_str != NULL) {
+        if (dir_str[0] == 'U') {
+            dir.dy = -1;
+        } else if (dir_str[0] == 'D') {
+            dir.dy = 1;
+        } else if (dir_str[0] == 'L') {
+            dir.dx = -1;
+        } else if (dir_str[0] == 'R') {
+            dir.dx = 1;
+        } else {
+            lua_pushstring(L, "Invalid direction");
+            return 1;
+        }
+    }
+    // Create a Move struct and fill it
+    Move move = {x, y, dir, add};
+
+    int result = applyMove(grid, &move);
+    lua_pushinteger(L, result);
+    
+    return 1;    
+}
+
 static int l_isValidMove(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
@@ -217,6 +261,9 @@ static void createGridMetatable(lua_State* L) {
 
         lua_pushcfunction(L, l_isValidMove);
         lua_setfield(L, -2, "isValidMove");
+
+        lua_pushcfunction(L, l_applyMove);
+        lua_setfield(L, -2, "applyMove");
 
         lua_pushcfunction(L, l_getValue);
         lua_setfield(L, -2, "getValue");

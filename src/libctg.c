@@ -160,6 +160,31 @@ bool isValidMove(const Grid* grid, Move* move) {
     return true;
 }
 
+int applyMove(const Grid* grid, Move* move) {
+    if (!isValidMove(grid, move)) {
+        return -1;
+    }
+
+    int index = move->y * grid->width + move->x;
+    int value = grid->values[index];
+    grid->values[index] = 0;
+
+    // Calculate the target position based on the direction
+    int tx = move->x + move->dir.dx * value;
+    int ty = move->y + move->dir.dy * value;
+
+    int tindex = ty * grid->width + tx;
+    int tvalue = grid->values[tindex];
+    if (move->add) {
+        grid->values[tindex] = tvalue + value;
+    }
+    else {
+        grid->values[tindex] = abs(tvalue - value);
+    }
+
+    return grid->values[tindex];    
+}
+
 bool isSolved(const Grid* grid) {
     for (int i = 0; i < grid->length; i++) {
         if (grid->values[i] != 0) {
