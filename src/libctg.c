@@ -148,13 +148,15 @@ bool isValidMove(const Grid* grid, Move* move) {
     int tx = move->x + move->dir.dx * value;
     int ty = move->y + move->dir.dy * value;
 
-    if (tx < 0 || tx > grid->width) {
+    // Check if the target position is within bounds
+    if (!inBounds(grid, tx, ty)) {
         return false;
     }
 
-    // Check if the target position is within bounds
-    if (!inBounds(grid, tx, ty)) {
-        return false;  // Out of bounds after applying direction
+    int tindex = ty * grid->width + tx;
+
+    if (grid->values[tindex] == 0) {
+        return false;
     }
 
     return true;
