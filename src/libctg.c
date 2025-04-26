@@ -124,9 +124,7 @@ Grid* parseGrid(const char* input) {
 }
 
 static bool inBounds(const Grid* grid, int x, int y) {
-    // Calculate the index for (x, y) in the 1D array
-    int index = y * grid->width + x;
-    return (index >= 0 && index < grid->length);
+    return x >= 0 && x < grid->width && y >= 0 && y < grid->height;
 }
 
 // Check if a move is valid
