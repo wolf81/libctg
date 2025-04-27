@@ -207,8 +207,10 @@ bool validateGridMove(const Grid* grid, Move* move) {
 }
 
 MoveResult executeGridMove(Grid* grid, Move* move) {
-    MoveResult result = peekGridMove(grid, move);
-
+    if (!validateGridMove(grid, move)) {
+        return (MoveResult){ -1, -1, 0, 0 };
+    }
+    
     // TODO: simplify peek/execute, maybe by adding a dryrun flag
     // TODO: maybe it's simpler if MoveResult tracks indices instead of x/y coord?
 
