@@ -6,7 +6,42 @@
 
 ErrorCode last_error = SUCCESS;
 
-Grid* newGrid(int width, int height, int* values) {
+void initMoveStack(MoveStack* stack, int capacity) {
+    stack->moves = malloc(sizeof(Move) * capacity);
+    stack->size = 0;
+    stack->capacity = capacity;
+}
+
+void freeMoveStack(MoveStack* stack) {
+    if (stack) {
+        free(stack->moves);
+        stack->moves = NULL;
+        stack->size = stack->capacity = 0;        
+    }
+}
+
+// Resize the MoveStack when it is full
+bool resizeMoveStack(MoveStack* stack) {
+    // Double the capacity of the stack
+    int new_capacity = stack->capacity * 2;
+    
+    // Reallocate memory for the stack
+    Move* new_moves = realloc(stack->moves, sizeof(Move) * new_capacity);
+    
+    // Check if realloc failed
+    if (new_moves == NULL) {
+        last_error = ERR_MEMORY_ALLOCATION;  // Set the error code
+        return false;
+    }
+    
+    // Update stack properties only if reallocation succeeded
+    stack->moves = new_moves;
+    stack->capacity = new_capacity;
+    
+    return true;
+}
+
+Grid* initGrid(int width, int height, int* values) {
     Grid* grid = (Grid*)malloc(sizeof(Grid));
     if (grid == NULL) {
         last_error = ERR_MEMORY_ALLOCATION;
@@ -19,6 +54,7 @@ Grid* newGrid(int width, int height, int* values) {
     grid->height = height;
     grid->length = length;
     grid->values = (int*)malloc(sizeof(int) * length);
+
     if (grid->values == NULL) {
         freeGrid(grid);
         last_error = ERR_MEMORY_ALLOCATION;
@@ -29,12 +65,22 @@ Grid* newGrid(int width, int height, int* values) {
         grid->values[i] = values[i];
     }
 
+    // Initialize the move history stack
+    initMoveStack(&grid->moveHistory, 100);
+
     return grid;
 }
 
 void freeGrid(Grid* grid) {
     if (grid) {
+        // Free the grid's values array
         free(grid->values);
+        grid->values = NULL;
+
+        // Free the move history stack (if present)
+        freeMoveStack(&grid->moveHistory);
+
+        // Free the grid structure itself
         free(grid);
     }
 }
@@ -118,7 +164,7 @@ Grid* parseGrid(const char* input) {
         return NULL;
     }
 
-    Grid *grid = newGrid(width, height, values);
+    Grid *grid = initGrid(width, height, values);
 
     return grid;
 }
@@ -160,29 +206,37 @@ bool isValidMove(const Grid* grid, Move* move) {
     return true;
 }
 
-MoveResult playMove(const Grid* grid, Move* move) {
+MoveResult playMove(Grid* grid, Move* move) {
     if (!isValidMove(grid, move)) {
         return (MoveResult){ -1, -1, 0 };
     }
 
+    // Check if the stack is full, and resize if necessary
+    if (grid->moveHistory.size == grid->moveHistory.capacity) {
+        resizeMoveStack(&grid->moveHistory);
+    }
+
     int index = move->y * grid->width + move->x;
     int value = grid->values[index];
-    grid->values[index] = 0;
 
-    // Calculate the target position based on the direction
+    // Calculate the target position based on the move
     int tx = move->x + move->dir.dx * value;
     int ty = move->y + move->dir.dy * value;
-
     int tindex = ty * grid->width + tx;
     int tvalue = grid->values[tindex];
+
+    // Save move in the stack
+    grid->moveHistory.moves[grid->moveHistory.size++] = *move;
+
+    // Apply the move
+    grid->values[index] = 0;
     if (move->add) {
         grid->values[tindex] = tvalue + value;
-    }
-    else {
+    } else {
         grid->values[tindex] = abs(tvalue - value);
     }
 
-    return (MoveResult){ tx, ty, grid->values[tindex] };;
+    return (MoveResult){ tx, ty, grid->values[tindex] };
 }
 
 MoveResult peekMove(const Grid* grid, Move* move) {

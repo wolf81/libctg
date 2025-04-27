@@ -18,13 +18,6 @@ typedef enum {
 LIBCTG_API ErrorCode last_error;
 
 typedef struct {
-    int width;
-    int height;
-    int length;
-    int* values;
-} Grid;
-
-typedef struct {
     int dx;
     int dy;
 } Direction;
@@ -35,6 +28,21 @@ typedef struct {
     Direction dir;
     bool add;
 } Move;
+
+typedef struct {
+    Move* moves;
+    int size;
+    int capacity;
+} MoveStack;
+
+typedef struct {
+    int width;
+    int height;
+    int length;
+    int* values;
+
+    MoveStack moveHistory;
+} Grid;
 
 typedef struct {
     int x;
@@ -52,7 +60,7 @@ LIBCTG_API int getValue(const Grid* grid, int x, int y);
 
 LIBCTG_API bool isValidMove(const Grid* grid, Move* move);
 
-LIBCTG_API MoveResult playMove(const Grid* grid, Move* move);
+LIBCTG_API MoveResult playMove(Grid* grid, Move* move);
 
 LIBCTG_API MoveResult peekMove(const Grid* grid, Move* move);
 
