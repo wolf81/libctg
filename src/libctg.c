@@ -54,6 +54,7 @@ Grid* initGrid(int width, int height, int* values) {
     grid->height = height;
     grid->length = length;
     grid->values = (int*)malloc(sizeof(int) * length);
+    grid->score = 0;
 
     if (grid->values == NULL) {
         destroyGrid(grid);
@@ -62,7 +63,9 @@ Grid* initGrid(int width, int height, int* values) {
     }
 
     for (int i = 0; i < length; i++) {
-        grid->values[i] = values[i];
+        int value = values[i];
+        grid->values[i] = value;
+        grid->score += value;
     }
 
     // Initialize the move history stack
@@ -238,6 +241,10 @@ MoveResult executeGridMove(Grid* grid, Move* move) {
     grid->values[index] = 0;
     grid->values[tindex] = abs(tvalue + change);
 
+    // Update score by subtracting original values and adding new value in target cell
+    grid->score -= (value + tvalue);
+    grid->score += grid->values[tindex];
+
     return (MoveResult){ tx, ty, grid->values[tindex], change };
 }
 
@@ -262,12 +269,7 @@ MoveResult peekGridMove(const Grid* grid, Move* move) {
 }
 
 bool isGridSolved(const Grid* grid) {
-    for (int i = 0; i < grid->length; i++) {
-        if (grid->values[i] != 0) {
-            return false;
-        }
-    }
-    return true;
+    return grid->score == 0;
 }
 
 int getGridValue(const Grid* grid, int x, int y) {

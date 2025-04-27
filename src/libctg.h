@@ -40,6 +40,7 @@ typedef struct {
     int height;
     int length;
     int* values;
+    int score;
 
     MoveStack moveHistory;
 } Grid;
