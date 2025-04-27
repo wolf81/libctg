@@ -46,8 +46,8 @@ local move = { 3, 3, 'L', false } -- x, y, direction, add?
 -- check if a move is possible
 local can_move = grid:isValidMove(unpack(move)) --> true
 
--- apply the move; returns -1 if the move was invalid, otherwise value in target cell after add/subtract
-local v = grid:applyMove(unpack(move)) --> 1
+-- apply the move; returns x, y & value in target cell - in case of invalid cell returns -1, -1, 0
+local v = grid:applyMove(unpack(move)) --> 1, 3, 1
 
 -- check if a grid is solved, which is true if all values are 0
 local is_solved = grid:isSolved() --> false

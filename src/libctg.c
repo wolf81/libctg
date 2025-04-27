@@ -160,9 +160,9 @@ bool isValidMove(const Grid* grid, Move* move) {
     return true;
 }
 
-int applyMove(const Grid* grid, Move* move) {
+MoveResult applyMove(const Grid* grid, Move* move) {
     if (!isValidMove(grid, move)) {
-        return -1;
+        return (MoveResult){ -1, -1, 0 };
     }
 
     int index = move->y * grid->width + move->x;
@@ -182,7 +182,12 @@ int applyMove(const Grid* grid, Move* move) {
         grid->values[tindex] = abs(tvalue - value);
     }
 
-    return grid->values[tindex];    
+    return (MoveResult){ tx, ty, grid->values[tindex] };;
+}
+
+MoveResult peekMove(const Grid* grid, Move* move) {
+    MoveResult result = { -1, -1, 0 };
+    return result;    
 }
 
 bool isSolved(const Grid* grid) {

@@ -127,10 +127,12 @@ static int l_applyMove(lua_State* L) {
     // Create a Move struct and fill it
     Move move = {x, y, dir, add};
 
-    int result = applyMove(grid, &move);
-    lua_pushinteger(L, result);
+    MoveResult result = applyMove(grid, &move);
+    lua_pushinteger(L, result.x + 1);
+    lua_pushinteger(L, result.y + 1);
+    lua_pushinteger(L, result.value);
     
-    return 1;    
+    return 3;    
 }
 
 static int l_isValidMove(lua_State* L) {

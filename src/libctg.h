@@ -36,6 +36,12 @@ typedef struct {
     bool add;
 } Move;
 
+typedef struct {
+    int x;
+    int y;
+    int value;
+} MoveResult;
+
 LIBCTG_API Grid* parseGrid(const char* input);
 
 LIBCTG_API char* toString(const Grid* grid);
@@ -46,7 +52,9 @@ LIBCTG_API int getValue(const Grid* grid, int x, int y);
 
 LIBCTG_API bool isValidMove(const Grid* grid, Move* move);
 
-LIBCTG_API int applyMove(const Grid* grid, Move* move);
+LIBCTG_API MoveResult applyMove(const Grid* grid, Move* move);
+
+LIBCTG_API MoveResult peekMove(const Grid* grid, Move* move);
 
 LIBCTG_API bool isSolved(const Grid* grid);
 
