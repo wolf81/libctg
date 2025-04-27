@@ -9,7 +9,7 @@ static int l_parseGrid(lua_State* L) {
     const char* input = luaL_checkstring(L, 1);
 
     // Parse the grid from the input string
-    Grid* grid = parseGrid(input);
+    Grid* grid = gridFromString(input);
 
     if (!grid) {
         lua_pushnil(L);  // Return nil to indicate failure
@@ -40,7 +40,7 @@ static int l_toString(lua_State* L) {
         return 1;
     }
 
-    char* s = toString(grid);  // Convert Grid to string using toString function
+    char* s = gridToString(grid);  // Convert Grid to string using toString function
     lua_pushstring(L, s);
     free(s);  // Free the string returned by toString
 
@@ -62,7 +62,7 @@ static int l_getValue(lua_State* L) {
         return 1;
     }
 
-    int value = getValue(grid, x, y);
+    int value = getGridValue(grid, x, y);
     lua_pushinteger(L, value);
 
     return 1;
@@ -80,7 +80,7 @@ static int l_isSolved(lua_State* L) {
         return 1;
     }
 
-    if (isSolved(grid)) {
+    if (isGridSolved(grid)) {
         lua_pushboolean(L, 1);  // Return true if the move is valid
     } else {
         lua_pushboolean(L, 0);  // Return false if the move is invalid
@@ -127,7 +127,7 @@ static int l_applyMove(lua_State* L) {
     // Create a Move struct and fill it
     Move move = {x, y, dir, add};
 
-    MoveResult result = playMove(grid, &move);
+    MoveResult result = executeGridMove(grid, &move);
     lua_pushinteger(L, result.x + 1);
     lua_pushinteger(L, result.y + 1);
     lua_pushinteger(L, result.value);
@@ -172,7 +172,7 @@ static int l_isValidMove(lua_State* L) {
     Move move = {x, y, dir, true};
 
     // Call the C function to check if the move is valid
-    if (isValidMove(grid, &move)) {
+    if (validateGridMove(grid, &move)) {
         lua_pushboolean(L, 1);  // Return true if the move is valid
     } else {
         lua_pushboolean(L, 0);  // Return false if the move is invalid
@@ -190,7 +190,7 @@ static int l_freeGrid(lua_State* L) {
 
     if (grid != NULL) {
         // Call the C function to free the grid
-        freeGrid(grid);
+        destroyGrid(grid);
     }
 
     return 0;  // No return value

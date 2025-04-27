@@ -12,17 +12,17 @@ int main() {
         "0 0 0 0 0 0 0 0\n"
         "0 0 0 0 0 0 0 0\n";
 
-    Grid *grid = parseGrid(input);
+    Grid *grid = gridFromString(input);
     if (grid == NULL) {
         return EXIT_FAILURE;
     }
 
-    char* grid_string = toString(grid);
+    char* grid_string = gridToString(grid);
     if (grid_string) {
         printf("%s", grid_string);        
     }
 
-    freeGrid(grid);
+    destroyGrid(grid);
 
     return EXIT_SUCCESS;
 }

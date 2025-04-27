@@ -56,7 +56,7 @@ Grid* initGrid(int width, int height, int* values) {
     grid->values = (int*)malloc(sizeof(int) * length);
 
     if (grid->values == NULL) {
-        freeGrid(grid);
+        destroyGrid(grid);
         last_error = ERR_MEMORY_ALLOCATION;
         return NULL;
     }
@@ -71,7 +71,7 @@ Grid* initGrid(int width, int height, int* values) {
     return grid;
 }
 
-void freeGrid(Grid* grid) {
+void destroyGrid(Grid* grid) {
     if (grid) {
         // Free the grid's values array
         free(grid->values);
@@ -85,7 +85,7 @@ void freeGrid(Grid* grid) {
     }
 }
 
-char* toString(const Grid* grid) {
+char* gridToString(const Grid* grid) {
     // Estimate needed buffer size:
     // max 3 characters per int, one space, and one newline per row
     int estimatedSize = grid->width * grid->height * 5 + grid->height + 1;
@@ -109,7 +109,7 @@ char* toString(const Grid* grid) {
     return buffer;
 }
 
-Grid* parseGrid(const char* input) {
+Grid* gridFromString(const char* input) {
     // trim leading & trailing whitespace and add newline at end for parsing
     input = strcat(trim((char*)input), "\n");
 
@@ -174,7 +174,7 @@ static bool inBounds(const Grid* grid, int x, int y) {
 }
 
 // Check if a move is valid
-bool isValidMove(const Grid* grid, Move* move) {
+bool validateGridMove(const Grid* grid, Move* move) {
     // Check if the move is within the bounds of the grid
     if (!inBounds(grid, move->x, move->y)) {
         return false;  // Out of bounds
@@ -206,8 +206,8 @@ bool isValidMove(const Grid* grid, Move* move) {
     return true;
 }
 
-MoveResult playMove(Grid* grid, Move* move) {
-    if (!isValidMove(grid, move)) {
+MoveResult executeGridMove(Grid* grid, Move* move) {
+    if (!validateGridMove(grid, move)) {
         return (MoveResult){ -1, -1, 0 };
     }
 
@@ -239,12 +239,12 @@ MoveResult playMove(Grid* grid, Move* move) {
     return (MoveResult){ tx, ty, grid->values[tindex] };
 }
 
-MoveResult peekMove(const Grid* grid, Move* move) {
+MoveResult peekGridMove(const Grid* grid, Move* move) {
     MoveResult result = { -1, -1, 0 };
     return result;    
 }
 
-bool isSolved(const Grid* grid) {
+bool isGridSolved(const Grid* grid) {
     for (int i = 0; i < grid->length; i++) {
         if (grid->values[i] != 0) {
             return false;
@@ -253,7 +253,7 @@ bool isSolved(const Grid* grid) {
     return true;
 }
 
-int getValue(const Grid* grid, int x, int y) {
+int getGridValue(const Grid* grid, int x, int y) {
     if (!inBounds(grid, x, y)) {
         return -1;
     }

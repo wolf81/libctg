@@ -50,20 +50,20 @@ typedef struct {
     int value;
 } MoveResult;
 
-LIBCTG_API Grid* parseGrid(const char* input);
+LIBCTG_API Grid* gridFromString(const char* input);
 
-LIBCTG_API char* toString(const Grid* grid);
+LIBCTG_API char* gridToString(const Grid* grid);
 
-LIBCTG_API void freeGrid(Grid* grid);
+LIBCTG_API void destroyGrid(Grid* grid);
 
-LIBCTG_API int getValue(const Grid* grid, int x, int y);
+LIBCTG_API int getGridValue(const Grid* grid, int x, int y);
 
-LIBCTG_API bool isValidMove(const Grid* grid, Move* move);
+LIBCTG_API bool validateGridMove(const Grid* grid, Move* move);
 
-LIBCTG_API MoveResult playMove(Grid* grid, Move* move);
+LIBCTG_API MoveResult executeGridMove(Grid* grid, Move* move);
 
-LIBCTG_API MoveResult peekMove(const Grid* grid, Move* move);
+LIBCTG_API MoveResult peekGridMove(const Grid* grid, Move* move);
 
-LIBCTG_API bool isSolved(const Grid* grid);
+LIBCTG_API bool isGridSolved(const Grid* grid);
 
 #endif
