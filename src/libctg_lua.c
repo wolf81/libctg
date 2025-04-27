@@ -5,6 +5,24 @@
 
 #define GRID_MT "libctg.grid_mt" // Grid metatable
 
+// Function to convert the direction enum to a string.
+const char* directionToString(Direction dir) {
+    // Handle horizontal directions (Left/Right)
+    if (dir.dy == 0) {
+        if (dir.dx == 1) return "R";  // Right
+        if (dir.dx == -1) return "L"; // Left
+    }
+
+    // Handle vertical directions (Up/Down)
+    if (dir.dx == 0) {
+        if (dir.dy == 1) return "U";  // Up
+        if (dir.dy == -1) return "D"; // Down
+    }
+
+    // If the direction doesn't match any valid case, return NULL
+    return NULL;
+}
+
 static int l_gridFromString(lua_State* L) {
     const char* input = luaL_checkstring(L, 1);
 
@@ -213,6 +231,49 @@ static int l_getGridSize(lua_State* L) {
     return 2;
 }
 
+static int l_getMoveHistory(lua_State* L) {
+    // Ensure the argument is a userdata (Grid object)
+    luaL_checktype(L, 1, LUA_TUSERDATA);
+
+    // Get the Grid pointer from the userdata
+    Grid* grid = *(Grid**)luaL_checkudata(L, 1, GRID_MT);  // Use the correct metatable
+
+    if (grid == NULL) {
+        lua_pushstring(L, "Invalid Grid object");
+        return 1;
+    }
+
+    lua_newtable(L);  // Create a new table for the result.
+
+    for (int i = 0; i < grid->moveHistory.size; ++i) {
+        Move* move = &grid->moveHistory.moves[i];
+
+        // Create a table for each move
+        lua_pushinteger(L, i + 1);  // Set the key (index) for the move.
+        lua_newtable(L);  // Create a new table for this move.
+
+        // Add x and y coordinates
+        lua_pushinteger(L, move->x + 1);
+        lua_rawseti(L, -2, 1);
+
+        lua_pushinteger(L, move->y + 1);
+        lua_rawseti(L, -2, 2);
+
+        // Add the direction as a string
+        lua_pushstring(L, directionToString(move->dir));
+        lua_rawseti(L, -2, 3);
+
+        // Add the add flag (true/false)
+        lua_pushboolean(L, move->add);
+        lua_rawseti(L, -2, 4);
+
+        // Set the move table in the result table
+        lua_settable(L, -3);
+    }
+
+    return 1;  // Return the move history table.    
+}
+
 static int l_gridPairsIter(lua_State* L) {
     Grid* grid = (Grid*)lua_touserdata(L, lua_upvalueindex(1));
     int index = (int)lua_tointeger(L, lua_upvalueindex(2));
@@ -275,6 +336,9 @@ static void createGridMetatable(lua_State* L) {
 
         lua_pushcfunction(L, l_getGridSize);
         lua_setfield(L, -2, "getSize");
+
+        lua_pushcfunction(L, l_getMoveHistory);
+        lua_setfield(L, -2, "getMoves");
 
         // Assign the method table to the __index field of the metatable
         lua_setfield(L, -2, "__index");

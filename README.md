@@ -49,6 +49,12 @@ local can_move = grid:isValidMove(unpack(move)) --> true
 -- apply the move; returns x, y & value in target cell - in case of invalid cell returns -1, -1, 0
 local v = grid:applyMove(unpack(move)) --> 1, 3, 1
 
+-- check move history
+for _, move in ipairs(grid:getMoves()) do
+    local x, y, dir, add = unpack(move)
+    print(string.format('x: %d, y: %d, dir: %s, add: %s', x, y, dir, tostring(add)))
+end
+
 -- check if a grid is solved, which is true if all values are 0
 local is_solved = grid:isSolved() --> false
 
