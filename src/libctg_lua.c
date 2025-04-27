@@ -127,7 +127,7 @@ static int l_applyMove(lua_State* L) {
     // Create a Move struct and fill it
     Move move = {x, y, dir, add};
 
-    MoveResult result = applyMove(grid, &move);
+    MoveResult result = playMove(grid, &move);
     lua_pushinteger(L, result.x + 1);
     lua_pushinteger(L, result.y + 1);
     lua_pushinteger(L, result.value);

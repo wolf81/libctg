@@ -160,7 +160,7 @@ bool isValidMove(const Grid* grid, Move* move) {
     return true;
 }
 
-MoveResult applyMove(const Grid* grid, Move* move) {
+MoveResult playMove(const Grid* grid, Move* move) {
     if (!isValidMove(grid, move)) {
         return (MoveResult){ -1, -1, 0 };
     }
