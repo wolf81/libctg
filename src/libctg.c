@@ -207,9 +207,10 @@ bool validateGridMove(const Grid* grid, Move* move) {
 }
 
 MoveResult executeGridMove(Grid* grid, Move* move) {
-    if (!validateGridMove(grid, move)) {
-        return (MoveResult){ -1, -1, 0 };
-    }
+    MoveResult result = peekGridMove(grid, move);
+
+    // TODO: simplify peek/execute, maybe by adding a dryrun flag
+    // TODO: maybe it's simpler if MoveResult tracks indices instead of x/y coord?
 
     // Check if the stack is full, and resize if necessary
     if (grid->moveHistory.size == grid->moveHistory.capacity) {
@@ -228,20 +229,34 @@ MoveResult executeGridMove(Grid* grid, Move* move) {
     // Save move in the stack
     grid->moveHistory.moves[grid->moveHistory.size++] = *move;
 
+    // determine addition or subtraction
+    int change = move->add ? value : -value;
+
     // Apply the move
     grid->values[index] = 0;
-    if (move->add) {
-        grid->values[tindex] = tvalue + value;
-    } else {
-        grid->values[tindex] = abs(tvalue - value);
-    }
+    grid->values[tindex] = abs(tvalue + change);
 
-    return (MoveResult){ tx, ty, grid->values[tindex] };
+    return (MoveResult){ tx, ty, grid->values[tindex], change };
 }
 
 MoveResult peekGridMove(const Grid* grid, Move* move) {
-    MoveResult result = { -1, -1, 0 };
-    return result;    
+    if (!validateGridMove(grid, move)) {
+        return (MoveResult){ -1, -1, 0, 0 };
+    }
+
+    int index = move->y * grid->width + move->x;
+    int value = grid->values[index];
+
+    // Calculate the target position based on the move
+    int tx = move->x + move->dir.dx * value;
+    int ty = move->y + move->dir.dy * value;
+    int tindex = ty * grid->width + tx;
+    int tvalue = grid->values[tindex];
+
+    // determine addition or subtraction
+    int change = move->add ? value : -value;
+
+    return (MoveResult){ tx, ty, abs(tvalue + change), change };
 }
 
 bool isGridSolved(const Grid* grid) {

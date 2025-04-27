@@ -46,6 +46,10 @@ local move = { 3, 3, 'L', false } -- x, y, direction, add?
 -- check if a move is possible
 local can_move = grid:isValidMove(unpack(move)) --> true
 
+-- check the result of a move, without performing the move
+-- PLEASE NOTE: the change value is the value in source cell with add/subtract sign, in this case -2
+local x, y, value, change = grid:peekMove(unpack(move))
+
 -- apply the move; returns x, y & value in target cell - in case of invalid cell returns -1, -1, 0
 local v = grid:applyMove(unpack(move)) --> 1, 3, 1
 

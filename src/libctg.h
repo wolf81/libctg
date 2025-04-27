@@ -48,6 +48,7 @@ typedef struct {
     int x;
     int y;
     int value;
+    int change;
 } MoveResult;
 
 LIBCTG_API Grid* gridFromString(const char* input);
