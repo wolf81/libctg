@@ -15,8 +15,8 @@ const char* directionToString(Direction dir) {
 
     // Handle vertical directions (Up/Down)
     if (dir.dx == 0) {
-        if (dir.dy == 1) return "U";  // Up
-        if (dir.dy == -1) return "D"; // Down
+        if (dir.dy == 1) return "D";  // Up
+        if (dir.dy == -1) return "U"; // Down
     }
 
     // If the direction doesn't match any valid case, return NULL
