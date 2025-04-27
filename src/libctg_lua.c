@@ -5,7 +5,7 @@
 
 #define GRID_MT "libctg.grid_mt" // Grid metatable
 
-static int l_parseGrid(lua_State* L) {
+static int l_gridFromString(lua_State* L) {
     const char* input = luaL_checkstring(L, 1);
 
     // Parse the grid from the input string
@@ -28,7 +28,7 @@ static int l_parseGrid(lua_State* L) {
     return 1;  // Return the userdata (Grid object) to Lua
 }
 
-static int l_toString(lua_State* L) {
+static int l_gridToString(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
 
@@ -47,7 +47,7 @@ static int l_toString(lua_State* L) {
     return 1;  // Return the string to Lua
 }
 
-static int l_getValue(lua_State* L) {
+static int l_getGridValue(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
 
@@ -68,7 +68,7 @@ static int l_getValue(lua_State* L) {
     return 1;
 }
 
-static int l_isSolved(lua_State* L) {
+static int l_isGridSolved(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
 
@@ -89,7 +89,7 @@ static int l_isSolved(lua_State* L) {
     return 1;
 }
 
-static int l_applyMove(lua_State* L) {
+static int l_executeGridMove(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
 
@@ -135,7 +135,7 @@ static int l_applyMove(lua_State* L) {
     return 3;    
 }
 
-static int l_isValidMove(lua_State* L) {
+static int l_validateGridMove(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
 
@@ -181,7 +181,7 @@ static int l_isValidMove(lua_State* L) {
     return 1;  // Return the boolean result
 }
 
-static int l_freeGrid(lua_State* L) {
+static int l_destroyGrid(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
 
@@ -196,7 +196,7 @@ static int l_freeGrid(lua_State* L) {
     return 0;  // No return value
 }
 
-static int l_getSize(lua_State* L) {
+static int l_getGridSize(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
 
@@ -213,9 +213,9 @@ static int l_getSize(lua_State* L) {
     return 2;
 }
 
-static int l_pairsIter(lua_State* L) {
+static int l_gridPairsIter(lua_State* L) {
     Grid* grid = (Grid*)lua_touserdata(L, lua_upvalueindex(1));
-    int index = lua_tointeger(L, lua_upvalueindex(2));
+    int index = (int)lua_tointeger(L, lua_upvalueindex(2));
 
     if (index >= grid->length) {
         return 0; // end iteration
@@ -236,12 +236,12 @@ static int l_pairsIter(lua_State* L) {
 }
 
 // The __pairs metamethod
-static int l_pairs(lua_State* L) {
+static int l_gridPairs(lua_State* L) {
     Grid* grid = *(Grid**)luaL_checkudata(L, 1, GRID_MT);
 
     lua_pushlightuserdata(L, grid);  // upvalue 1
     lua_pushinteger(L, 0);           // upvalue 2 (start index)
-    lua_pushcclosure(L, l_pairsIter, 2);
+    lua_pushcclosure(L, l_gridPairsIter, 2);
     return 1; // returns the closure
 }
 
@@ -249,31 +249,31 @@ static void createGridMetatable(lua_State* L) {
     // Create the metatable for the grid (returns 1 if the metatable is new)
     if (luaL_newmetatable(L, GRID_MT)) {
         // assign meta-methods
-        lua_pushcfunction(L, l_freeGrid);
+        lua_pushcfunction(L, l_destroyGrid);
         lua_setfield(L, -2, "__gc"); // automatic garbage collection
 
-        lua_pushcfunction(L, l_toString);  // Push the toString function
+        lua_pushcfunction(L, l_gridToString);  // Push the toString function
         lua_setfield(L, -2, "__tostring"); // Assign it as the __tostring metamethod
 
         // Create method table (a table to store methods)
         lua_newtable(L);  // Create a new table to store methods
 
-        lua_pushcfunction(L, l_pairs);
+        lua_pushcfunction(L, l_gridPairs);
         lua_setfield(L, -2, "iter");
 
-        lua_pushcfunction(L, l_isValidMove);
+        lua_pushcfunction(L, l_validateGridMove);
         lua_setfield(L, -2, "isValidMove");
 
-        lua_pushcfunction(L, l_applyMove);
+        lua_pushcfunction(L, l_executeGridMove);
         lua_setfield(L, -2, "applyMove");
 
-        lua_pushcfunction(L, l_getValue);
+        lua_pushcfunction(L, l_getGridValue);
         lua_setfield(L, -2, "getValue");
 
-        lua_pushcfunction(L, l_isSolved);
+        lua_pushcfunction(L, l_isGridSolved);
         lua_setfield(L, -2, "isSolved");
 
-        lua_pushcfunction(L, l_getSize);
+        lua_pushcfunction(L, l_getGridSize);
         lua_setfield(L, -2, "getSize");
 
         // Assign the method table to the __index field of the metatable
@@ -300,7 +300,7 @@ LIBCTG_API int luaopen_libctg(lua_State* L) {
     // Create the module table
     lua_newtable(L);
 
-    lua_pushcfunction(L, l_parseGrid);
+    lua_pushcfunction(L, l_gridFromString);
     lua_setfield(L, -2, "parseGrid");
 
     lua_pushcfunction(L, l_getLastError);
