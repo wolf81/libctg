@@ -52,6 +52,11 @@ typedef struct {
     int change;
 } MoveResult;
 
+typedef struct {
+    const Grid* grid;
+    int index;
+} GridIterator;
+
 LIBCTG_API Grid* gridFromString(const char* input);
 
 LIBCTG_API char* gridToString(const Grid* grid);
@@ -67,5 +72,9 @@ LIBCTG_API MoveResult executeGridMove(Grid* grid, Move* move);
 LIBCTG_API MoveResult peekGridMove(const Grid* grid, Move* move);
 
 LIBCTG_API bool isGridSolved(const Grid* grid);
+
+LIBCTG_API bool gridIteratorNext(GridIterator* iter, int* x, int* y, int* value);
+
+LIBCTG_API void initGridIterator(GridIterator* it, const Grid* grid);
 
 #endif

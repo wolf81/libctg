@@ -323,35 +323,29 @@ static int l_getMoveHistory(lua_State* L) {
 }
 
 static int l_gridPairsIter(lua_State* L) {
-    Grid* grid = (Grid*)lua_touserdata(L, lua_upvalueindex(1));
-    int index = (int)lua_tointeger(L, lua_upvalueindex(2));
+    GridIterator* iter = (GridIterator*)lua_touserdata(L, lua_upvalueindex(1));
 
-    if (index >= grid->length) {
-        return 0; // end iteration
+    int x, y, value;
+    if (!gridIteratorNext(iter, &x, &y, &value)) {
+        return 0; // end of iteration
     }
 
-    int x = (index % grid->width) + 1;
-    int y = (index / grid->width) + 1;
-    int value = grid->values[index];
-
-    // Update index for next call
-    lua_pushinteger(L, index + 1);
-    lua_replace(L, lua_upvalueindex(2));
-
-    lua_pushinteger(L, x);
-    lua_pushinteger(L, y);
+    lua_pushinteger(L, x + 1);
+    lua_pushinteger(L, y + 1);
     lua_pushinteger(L, value);
     return 3;
 }
 
-// The __pairs metamethod
 static int l_gridPairs(lua_State* L) {
     Grid* grid = *(Grid**)luaL_checkudata(L, 1, GRID_MT);
 
-    lua_pushlightuserdata(L, grid);  // upvalue 1
-    lua_pushinteger(L, 0);           // upvalue 2 (start index)
-    lua_pushcclosure(L, l_gridPairsIter, 2);
-    return 1; // returns the closure
+    // Allocate userdata for GridIterator
+    GridIterator* iter = (GridIterator*)lua_newuserdata(L, sizeof(GridIterator));
+    initGridIterator(iter, grid); // Initialize the iterator
+
+    // Push the iterator function with 1 upvalue (GridIterator*)
+    lua_pushcclosure(L, l_gridPairsIter, 1);
+    return 1;
 }
 
 static void createGridMetatable(lua_State* L) {

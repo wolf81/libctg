@@ -6,6 +6,23 @@
 
 ErrorCode last_error = SUCCESS;
 
+void initGridIterator(GridIterator* iter, const Grid* grid) {
+    iter->grid = grid;
+    iter->index = 0;
+}
+
+bool gridIteratorNext(GridIterator* iter, int* out_x, int* out_y, int* out_value) {
+    if (iter->index >= iter->grid->length) {
+        return false; // Finished
+    }
+    *out_x = iter->index % iter->grid->width;
+    *out_y = iter->index / iter->grid->width;
+    *out_value = iter->grid->values[iter->index];
+
+    iter->index++;
+    return true;
+}
+
 void initMoveStack(MoveStack* stack, int capacity) {
     stack->moves = malloc(sizeof(Move) * capacity);
     stack->size = 0;
@@ -91,24 +108,25 @@ void destroyGrid(Grid* grid) {
 char* gridToString(const Grid* grid) {
     // Estimate needed buffer size:
     // max 3 characters per int, one space, and one newline per row
-    int estimatedSize = grid->width * grid->height * 5 + grid->height + 1;
+    int estimatedSize = grid->length * 4 + grid->height + 1;
     char* buffer = malloc(estimatedSize);
     if (!buffer) return NULL;
 
     char* ptr = buffer;
     int remaining = estimatedSize;
 
-    for (int y = 0; y < grid->height; y++) {
-        for (int x = 0; x < grid->width; x++) {
-            int written = snprintf(ptr, remaining, "%d ", grid->values[y * grid->width + x]);
-            ptr += written;
-            remaining -= written;
-        }
-        *ptr++ = '\n';
-        remaining--;
-    }
-    *ptr = '\0';  // Null-terminate the string
+    for (int i = 0; i < grid->length; i++) {
+        int written = snprintf(ptr, remaining, "%d ", grid->values[i]);
+        ptr += written;
+        remaining -= written;
 
+        if ((i + 1) % grid->width == 0) {
+            *ptr++ = '\n';
+            remaining--;
+        }
+    }
+
+    *ptr = '\0';  // Null-terminate the string
     return buffer;
 }
 

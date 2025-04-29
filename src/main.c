@@ -22,6 +22,13 @@ int main() {
         printf("%s", grid_string);        
     }
 
+    GridIterator iter;
+    initGridIterator(&iter, grid);
+    int x, y, value;
+    while (gridIteratorNext(&iter, &x, &y, &value)) {
+        printf("Cell (%d %d): %d\n", x, y, value);
+    }
+
     destroyGrid(grid);
 
     return EXIT_SUCCESS;
