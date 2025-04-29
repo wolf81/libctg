@@ -66,4 +66,9 @@ local is_solved = grid:isSolved() --> false
 for x, y, value in grid:iter() do
     print(string.format('%d, %d: %d', x, y, value)) --> 1, 1: 0 ... 8, 5: 7
 end
+
+-- revert the last move, returns true while moves exist in move history
+for i = 1, 2 do
+    print(tostring(grid:revertMove())) --> true, false
+end
 ```

@@ -29,6 +29,12 @@ int main() {
         printf("Cell (%d %d): %d\n", x, y, value);
     }
 
+    revertGridMove(grid);
+    grid_string = gridToString(grid);
+    if (grid_string) {
+        printf("%s", grid_string);        
+    }    
+
     destroyGrid(grid);
 
     return EXIT_SUCCESS;

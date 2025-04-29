@@ -30,7 +30,13 @@ typedef struct {
 } Move;
 
 typedef struct {
-    Move* moves;
+    Move move;
+    int svalue; // value at source before move
+    int tvalue; // value at target before move
+} MoveRecord;
+
+typedef struct {
+    MoveRecord* moves;
     int size;
     int capacity;
 } MoveStack;
@@ -76,5 +82,7 @@ LIBCTG_API bool isGridSolved(const Grid* grid);
 LIBCTG_API bool gridIteratorNext(GridIterator* iter, int* x, int* y, int* value);
 
 LIBCTG_API void initGridIterator(GridIterator* it, const Grid* grid);
+
+LIBCTG_API bool revertGridMove(Grid* grid);
 
 #endif

@@ -12,8 +12,8 @@ void initGridIterator(GridIterator* iter, const Grid* grid) {
 }
 
 bool gridIteratorNext(GridIterator* iter, int* out_x, int* out_y, int* out_value) {
-    if (iter->index >= iter->grid->length) {
-        return false; // Finished
+    if (iter->index >= iter->grid->width * iter->grid->height) {
+        return false;
     }
     *out_x = iter->index % iter->grid->width;
     *out_y = iter->index / iter->grid->width;
@@ -24,7 +24,7 @@ bool gridIteratorNext(GridIterator* iter, int* out_x, int* out_y, int* out_value
 }
 
 void initMoveStack(MoveStack* stack, int capacity) {
-    stack->moves = malloc(sizeof(Move) * capacity);
+    stack->moves = malloc(sizeof(MoveRecord) * capacity);
     stack->size = 0;
     stack->capacity = capacity;
 }
@@ -33,13 +33,13 @@ void freeMoveStack(MoveStack* stack) {
     if (stack) {
         free(stack->moves);
         stack->moves = NULL;
-        stack->size = stack->capacity = 0;        
+        stack->size = stack->capacity = 0;
     }
 }
 
 bool resizeMoveStack(MoveStack* stack) {
     int new_capacity = stack->capacity * 2;
-    Move* new_moves = realloc(stack->moves, sizeof(Move) * new_capacity);
+    MoveRecord* new_moves = realloc(stack->moves, sizeof(MoveRecord) * new_capacity);
     if (new_moves == NULL) {
         last_error = ERR_MEMORY_ALLOCATION;
         return false;
@@ -49,9 +49,9 @@ bool resizeMoveStack(MoveStack* stack) {
     return true;
 }
 
-Grid* initGrid(int width, int height, int* flatValues) {
+Grid* initGrid(int width, int height, int* values) {
     Grid* grid = (Grid*)malloc(sizeof(Grid));
-    if (!grid) {
+    if (grid == NULL) {
         last_error = ERR_MEMORY_ALLOCATION;
         return NULL;
     }
@@ -61,26 +61,26 @@ Grid* initGrid(int width, int height, int* flatValues) {
     grid->length = width * height;
     grid->score = 0;
 
-    grid->values = (int**)malloc(height * sizeof(int*));
+    grid->values = malloc(height * sizeof(int*));
     if (!grid->values) {
-        free(grid);
+        destroyGrid(grid);
         last_error = ERR_MEMORY_ALLOCATION;
         return NULL;
     }
 
-    for (int y = 0; y < height; ++y) {
-        grid->values[y] = (int*)malloc(width * sizeof(int));
+    for (int y = 0; y < height; y++) {
+        grid->values[y] = malloc(width * sizeof(int));
         if (!grid->values[y]) {
-            for (int k = 0; k < y; ++k) free(grid->values[k]);
+            for (int j = 0; j < y; j++) free(grid->values[j]);
             free(grid->values);
             free(grid);
             last_error = ERR_MEMORY_ALLOCATION;
             return NULL;
         }
-        for (int x = 0; x < width; ++x) {
-            int value = flatValues[y * width + x];
-            grid->values[y][x] = value;
-            grid->score += value;
+        for (int x = 0; x < width; x++) {
+            int i = y * width + x;
+            grid->values[y][x] = values[i];
+            grid->score += values[i];
         }
     }
 
@@ -90,13 +90,11 @@ Grid* initGrid(int width, int height, int* flatValues) {
 
 void destroyGrid(Grid* grid) {
     if (grid) {
-        if (grid->values) {
-            for (int y = 0; y < grid->height; ++y) {
-                free(grid->values[y]);
-            }
-            free(grid->values);
-            grid->values = NULL;
+        for (int y = 0; y < grid->height; y++) {
+            free(grid->values[y]);
         }
+        free(grid->values);
+        grid->values = NULL;
 
         freeMoveStack(&grid->moveHistory);
         free(grid);
@@ -111,8 +109,8 @@ char* gridToString(const Grid* grid) {
     char* ptr = buffer;
     int remaining = estimatedSize;
 
-    for (int y = 0; y < grid->height; ++y) {
-        for (int x = 0; x < grid->width; ++x) {
+    for (int y = 0; y < grid->height; y++) {
+        for (int x = 0; x < grid->width; x++) {
             int written = snprintf(ptr, remaining, "%d ", grid->values[y][x]);
             ptr += written;
             remaining -= written;
@@ -126,9 +124,30 @@ char* gridToString(const Grid* grid) {
 }
 
 Grid* gridFromString(const char* input) {
-    input = strcat(trim((char*)input), "\n");
+    char* input_copy = strdup(input);
+    if (!input_copy) {
+        last_error = ERR_MEMORY_ALLOCATION;
+        return NULL;
+    }
+
+    char* trimmed = trim(input_copy);
+    size_t len = strlen(trimmed);
+
+    char* adjusted_input = malloc(len + 2); // +1 for '\n', +1 for '\0'
+    if (!adjusted_input) {
+        free(input_copy);
+        last_error = ERR_MEMORY_ALLOCATION;
+        return NULL;
+    }
+
+    strcpy(adjusted_input, trimmed);
+    adjusted_input[len] = '\n';
+    adjusted_input[len + 1] = '\0';
+
     int width = 0, height = 0;
-    if (sscanf(input, "%d %d\n", &width, &height) != 2) {
+    if (sscanf(adjusted_input, "%d %d\n", &width, &height) != 2) {
+        free(input_copy);
+        free(adjusted_input);
         last_error = ERR_INVALID_INPUT;
         return NULL;
     }
@@ -136,11 +155,14 @@ Grid* gridFromString(const char* input) {
     int length = width * height;
     int *values = (int *)malloc(sizeof(int) * length);
     if (values == NULL) {
+        free(input_copy);
+        free(adjusted_input);
         last_error = ERR_MEMORY_ALLOCATION;
         return NULL;
     }
 
-    const char *ptr = strchr(input, '\n') + 1;
+    const char *ptr = strchr(adjusted_input, '\n') + 1;
+
     int i = 0;
     char line[256];
 
@@ -149,16 +171,17 @@ Grid* gridFromString(const char* input) {
         size_t line_len = (line_end) ? (line_end - ptr) : strlen(ptr);
         strncpy(line, ptr, line_len);
         line[line_len] = '\0';
-
         char *trimmed = trim(line);
         char *token = strtok(trimmed, " ");
         while (token) {
             values[i++] = atoi(token);
             token = strtok(NULL, " ");
         }
-
         ptr = line_end ? (line_end + 1) : NULL;
     }
+
+    free(input_copy);
+    free(adjusted_input);
 
     if (i != length) {
         last_error = ERR_INVALID_INPUT;
@@ -175,24 +198,14 @@ static bool inBounds(const Grid* grid, int x, int y) {
 }
 
 bool validateGridMove(const Grid* grid, Move* move) {
-    if (!inBounds(grid, move->x, move->y)) {
-        return false;
-    }
-
+    if (!inBounds(grid, move->x, move->y)) return false;
     int value = grid->values[move->y][move->x];
-    if (value == 0) {
-        return false;
-    }
+    if (value == 0) return false;
 
     int tx = move->x + move->dir.dx * value;
     int ty = move->y + move->dir.dy * value;
-    if (!inBounds(grid, tx, ty)) {
-        return false;
-    }
-
-    if (grid->values[ty][tx] == 0) {
-        return false;
-    }
+    if (!inBounds(grid, tx, ty)) return false;
+    if (grid->values[ty][tx] == 0) return false;
 
     return true;
 }
@@ -206,17 +219,18 @@ MoveResult executeGridMove(Grid* grid, Move* move) {
         resizeMoveStack(&grid->moveHistory);
     }
 
-    int value = grid->values[move->y][move->x];
-    int tx = move->x + move->dir.dx * value;
-    int ty = move->y + move->dir.dy * value;
-    int tvalue = grid->values[ty][tx];
+    int sx = move->x, sy = move->y;
+    int value = grid->values[sy][sx];
+    int tx = sx + move->dir.dx * value;
+    int ty = sy + move->dir.dy * value;
 
-    grid->moveHistory.moves[grid->moveHistory.size++] = *move;
+    int tvalue = grid->values[ty][tx];
     int change = move->add ? value : -value;
 
-    grid->values[move->y][move->x] = 0;
-    grid->values[ty][tx] = abs(tvalue + change);
+    grid->moveHistory.moves[grid->moveHistory.size++] = (MoveRecord){ *move, value, tvalue };
 
+    grid->values[sy][sx] = 0;
+    grid->values[ty][tx] = abs(tvalue + change);
     grid->score -= (value + tvalue);
     grid->score += grid->values[ty][tx];
 
@@ -228,13 +242,36 @@ MoveResult peekGridMove(const Grid* grid, Move* move) {
         return (MoveResult){ -1, -1, 0, 0 };
     }
 
-    int value = grid->values[move->y][move->x];
-    int tx = move->x + move->dir.dx * value;
-    int ty = move->y + move->dir.dy * value;
+    int sx = move->x, sy = move->y;
+    int value = grid->values[sy][sx];
+    int tx = sx + move->dir.dx * value;
+    int ty = sy + move->dir.dy * value;
     int tvalue = grid->values[ty][tx];
-
     int change = move->add ? value : -value;
+
     return (MoveResult){ tx, ty, abs(tvalue + change), change };
+}
+
+bool revertGridMove(Grid* grid) {
+    if (grid->moveHistory.size == 0) return false;
+
+    MoveRecord record = grid->moveHistory.moves[--grid->moveHistory.size];
+    Move move = record.move;
+
+    int sx = move.x;
+    int sy = move.y;
+    int value = record.svalue;
+
+    int tx = sx + move.dir.dx * value;
+    int ty = sy + move.dir.dy * value;
+
+    grid->score -= grid->values[ty][tx];
+    grid->score += (record.svalue + record.tvalue);
+
+    grid->values[sx][sy] = record.svalue;
+    grid->values[ty][tx] = record.tvalue;
+
+    return true;
 }
 
 bool isGridSolved(const Grid* grid) {
@@ -242,8 +279,6 @@ bool isGridSolved(const Grid* grid) {
 }
 
 int getGridValue(const Grid* grid, int x, int y) {
-    if (!inBounds(grid, x, y)) {
-        return -1;
-    }
-    return grid->values[y][x];    
+    if (!inBounds(grid, x, y)) return -1;
+    return grid->values[y][x];
 }

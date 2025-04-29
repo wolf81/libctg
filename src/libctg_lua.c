@@ -154,6 +154,28 @@ static int l_peekGridMove(lua_State* L) {
     return 4;    
 }
 
+static int l_revertGridMove(lua_State* L) {
+    // Ensure the argument is a userdata (Grid object)
+    luaL_checktype(L, 1, LUA_TUSERDATA);
+
+    // Get the Grid pointer from the userdata
+    Grid* grid = *(Grid**)luaL_checkudata(L, 1, GRID_MT);  // Use the correct metatable
+
+    if (grid == NULL) {
+        lua_pushstring(L, "Invalid Grid object");
+        return 1;
+    }
+
+    // Call the C function to check if the move is valid
+    if (revertGridMove(grid)) {
+        lua_pushboolean(L, 1);  // Return true if the move is valid
+    } else {
+        lua_pushboolean(L, 0);  // Return false if the move is invalid
+    }
+
+    return 1;
+}
+
 static int l_executeGridMove(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
@@ -294,7 +316,7 @@ static int l_getMoveHistory(lua_State* L) {
     lua_newtable(L);  // Create a new table for the result.
 
     for (int i = 0; i < grid->moveHistory.size; ++i) {
-        Move* move = &grid->moveHistory.moves[i];
+        Move* move = &grid->moveHistory.moves[i].move;
 
         // Create a table for each move
         lua_pushinteger(L, i + 1);  // Set the key (index) for the move.
@@ -369,6 +391,9 @@ static void createGridMetatable(lua_State* L) {
 
         lua_pushcfunction(L, l_executeGridMove);
         lua_setfield(L, -2, "applyMove");
+
+        lua_pushcfunction(L, l_revertGridMove);
+        lua_setfield(L, -2, "revertMove");
 
         lua_pushcfunction(L, l_peekGridMove);
         lua_setfield(L, -2, "peekMove");
