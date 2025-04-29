@@ -39,7 +39,7 @@ typedef struct {
     int width;
     int height;
     int length;
-    int* values;
+    int** values;
     int score;
 
     MoveStack moveHistory;
