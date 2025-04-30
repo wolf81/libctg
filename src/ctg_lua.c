@@ -27,7 +27,7 @@ static int l_gridFromString(lua_State* L) {
     const char* input = luaL_checkstring(L, 1);
 
     // Parse the grid from the input string
-    Grid* grid = gridFromString(input);
+    Grid* grid = ctg_io_grid_from_string(input);
 
     if (!grid) {
         lua_pushnil(L);  // Return nil to indicate failure
@@ -58,7 +58,7 @@ static int l_gridToString(lua_State* L) {
         return 1;
     }
 
-    char* s = gridToString(grid);  // Convert Grid to string using toString function
+    char* s = ctg_io_grid_to_string(grid);  // Convert Grid to string using toString function
     lua_pushstring(L, s);
     free(s);  // Free the string returned by toString
 
@@ -80,7 +80,7 @@ static int l_getGridValue(lua_State* L) {
         return 1;
     }
 
-    int value = getGridValue(grid, x, y);
+    int value = ctg_grid_get_value(grid, x, y);
     lua_pushinteger(L, value);
 
     return 1;
@@ -98,7 +98,7 @@ static int l_isGridSolved(lua_State* L) {
         return 1;
     }
 
-    if (isGridSolved(grid)) {
+    if (ctg_grid_is_solved(grid)) {
         lua_pushboolean(L, 1);  // Return true if the move is valid
     } else {
         lua_pushboolean(L, 0);  // Return false if the move is invalid
@@ -145,7 +145,7 @@ static int l_peekGridMove(lua_State* L) {
     // Create a Move struct and fill it
     Move move = {x, y, dir, add};
 
-    MoveResult result = peekGridMove(grid, &move);
+    MoveResult result = ctg_move_peek(grid, &move);
     lua_pushinteger(L, result.x + 1);
     lua_pushinteger(L, result.y + 1);
     lua_pushinteger(L, result.value);
@@ -167,7 +167,7 @@ static int l_revertGridMove(lua_State* L) {
     }
 
     // Call the C function to check if the move is valid
-    if (revertGridMove(grid)) {
+    if (ctg_move_revert(grid)) {
         lua_pushboolean(L, 1);  // Return true if the move is valid
     } else {
         lua_pushboolean(L, 0);  // Return false if the move is invalid
@@ -214,7 +214,7 @@ static int l_executeGridMove(lua_State* L) {
     // Create a Move struct and fill it
     Move move = {x, y, dir, add};
 
-    MoveResult result = executeGridMove(grid, &move);
+    MoveResult result = ctg_move_execute(grid, &move);
     lua_pushinteger(L, result.x + 1);
     lua_pushinteger(L, result.y + 1);
     lua_pushinteger(L, result.value);
@@ -260,7 +260,7 @@ static int l_validateGridMove(lua_State* L) {
     Move move = {x, y, dir, true};
 
     // Call the C function to check if the move is valid
-    if (validateGridMove(grid, &move)) {
+    if (ctg_move_validate(grid, &move)) {
         lua_pushboolean(L, 1);  // Return true if the move is valid
     } else {
         lua_pushboolean(L, 0);  // Return false if the move is invalid
@@ -278,7 +278,7 @@ static int l_destroyGrid(lua_State* L) {
 
     if (grid != NULL) {
         // Call the C function to free the grid
-        destroyGrid(grid);
+        ctg_grid_destroy(grid);
     }
 
     return 0;  // No return value
@@ -348,7 +348,7 @@ static int l_gridPairsIter(lua_State* L) {
     GridIterator* iter = (GridIterator*)lua_touserdata(L, lua_upvalueindex(1));
 
     int x, y, value;
-    if (!gridIteratorNext(iter, &x, &y, &value)) {
+    if (!ctg_iterator_next(iter, &x, &y, &value)) {
         return 0; // end of iteration
     }
 
@@ -363,7 +363,7 @@ static int l_gridPairs(lua_State* L) {
 
     // Allocate userdata for GridIterator
     GridIterator* iter = (GridIterator*)lua_newuserdata(L, sizeof(GridIterator));
-    initGridIterator(iter, grid); // Initialize the iterator
+    ctg_iterator_init(iter, grid); // Initialize the iterator
 
     // Push the iterator function with 1 upvalue (GridIterator*)
     lua_pushcclosure(L, l_gridPairsIter, 1);

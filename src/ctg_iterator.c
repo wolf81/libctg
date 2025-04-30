@@ -1,11 +1,11 @@
 #include "ctg_iterator.h"
 
-void initGridIterator(GridIterator* iter, const Grid* grid) {
+void ctg_iterator_init(GridIterator* iter, const Grid* grid) {
     iter->grid = grid;
     iter->index = 0;
 }
 
-bool gridIteratorNext(GridIterator* iter, int* out_x, int* out_y, int* out_value) {
+bool ctg_iterator_next(GridIterator* iter, int* out_x, int* out_y, int* out_value) {
     if (iter->index >= iter->grid->width * iter->grid->height) {
         return false;
     }

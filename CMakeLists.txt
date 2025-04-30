@@ -40,6 +40,7 @@ add_library(libctg SHARED
     src/ctg_iterator.c
     src/ctg_io.c
     src/ctg_move.c
+    src/ctg_movestack.c
 )
 
 # Always produce libctg.dll / libctg.so / libctg.dylib

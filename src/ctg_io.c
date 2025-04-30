@@ -29,7 +29,7 @@ static char *trim(const char *str) {
 }
 
 
-char* gridToString(const Grid* grid) {
+char* ctg_io_grid_to_string(const Grid* grid) {
     int estimatedSize = grid->length * 4 + grid->height + 1;
     char* buffer = malloc(estimatedSize);
     if (!buffer) return NULL;
@@ -51,7 +51,7 @@ char* gridToString(const Grid* grid) {
     return buffer;
 }
 
-Grid* gridFromString(const char* input) {
+Grid* ctg_io_grid_from_string(const char* input) {
     char* input_copy = strdup(input);
     if (!input_copy) {
         last_error = ERR_MEMORY_ALLOCATION;
@@ -116,7 +116,7 @@ Grid* gridFromString(const char* input) {
         return NULL;
     }
 
-    Grid *grid = initGrid(width, height, values);
+    Grid *grid = ctg_grid_create(width, height, values);
     free(values);
     return grid;
 }

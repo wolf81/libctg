@@ -8,8 +8,8 @@ typedef struct {
     int index;
 } GridIterator;
 
-LIBCTG_API bool gridIteratorNext(GridIterator* iter, int* x, int* y, int* value);
+LIBCTG_API void ctg_iterator_init(GridIterator* it, const Grid* grid);
 
-LIBCTG_API void initGridIterator(GridIterator* it, const Grid* grid);
+LIBCTG_API bool ctg_iterator_next(GridIterator* iter, int* x, int* y, int* value);
 
 #endif

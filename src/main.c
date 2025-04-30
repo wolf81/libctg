@@ -12,30 +12,30 @@ int main() {
         "0 0 0 0 0 0 0 0\n"
         "0 0 0 0 0 0 0 0\n";
 
-    Grid *grid = gridFromString(input);
+    Grid *grid = ctg_io_grid_from_string(input);
     if (grid == NULL) {
         return EXIT_FAILURE;
     }
 
-    char* grid_string = gridToString(grid);
+    char* grid_string = ctg_io_grid_to_string(grid);
     if (grid_string) {
         printf("%s", grid_string);        
     }
 
     GridIterator iter;
-    initGridIterator(&iter, grid);
+    ctg_iterator_init(&iter, grid);
     int x, y, value;
-    while (gridIteratorNext(&iter, &x, &y, &value)) {
+    while (ctg_iterator_next(&iter, &x, &y, &value)) {
         printf("Cell (%d %d): %d\n", x, y, value);
     }
 
-    revertGridMove(grid);
-    grid_string = gridToString(grid);
+    ctg_move_revert(grid);
+    grid_string = ctg_io_grid_to_string(grid);
     if (grid_string) {
         printf("%s", grid_string);        
     }    
 
-    destroyGrid(grid);
+    ctg_grid_destroy(grid);
 
     return EXIT_SUCCESS;
 }

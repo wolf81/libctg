@@ -1,10 +1,12 @@
 #ifndef CTG_MOVESTACK_H
 #define CTG_MOVESTACK_H
 
-void initMoveStack(MoveStack* stack, int capacity);
+#include "ctg_types.h"
 
-void freeMoveStack(MoveStack* stack);
+void ctg_movestack_init(MoveStack* stack, int capacity);
 
-bool resizeMoveStack(MoveStack* stack);
+void ctg_movestack_free(MoveStack* stack);
+
+bool ctg_movestack_resize(MoveStack* stack);
 
 #endif

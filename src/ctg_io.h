@@ -3,8 +3,8 @@
 
 #include "ctg_types.h"
 
-LIBCTG_API Grid* gridFromString(const char* input);
+LIBCTG_API Grid* ctg_io_grid_from_string(const char* input);
 
-LIBCTG_API char* gridToString(const Grid* grid);
+LIBCTG_API char* ctg_io_grid_to_string(const Grid* grid);
 
 #endif

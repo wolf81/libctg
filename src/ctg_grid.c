@@ -6,33 +6,7 @@
 
 ErrorCode last_error = SUCCESS;
 
-void initMoveStack(MoveStack* stack, int capacity) {
-    stack->moves = malloc(sizeof(MoveRecord) * capacity);
-    stack->size = 0;
-    stack->capacity = capacity;
-}
-
-void freeMoveStack(MoveStack* stack) {
-    if (stack) {
-        free(stack->moves);
-        stack->moves = NULL;
-        stack->size = stack->capacity = 0;
-    }
-}
-
-bool resizeMoveStack(MoveStack* stack) {
-    int new_capacity = stack->capacity * 2;
-    MoveRecord* new_moves = realloc(stack->moves, sizeof(MoveRecord) * new_capacity);
-    if (new_moves == NULL) {
-        last_error = ERR_MEMORY_ALLOCATION;
-        return false;
-    }
-    stack->moves = new_moves;
-    stack->capacity = new_capacity;
-    return true;
-}
-
-Grid* initGrid(int width, int height, int* values) {
+Grid* ctg_grid_create(int width, int height, int* values) {
     Grid* grid = (Grid*)malloc(sizeof(Grid));
     if (grid == NULL) {
         last_error = ERR_MEMORY_ALLOCATION;
@@ -46,7 +20,7 @@ Grid* initGrid(int width, int height, int* values) {
 
     grid->values = malloc(height * sizeof(int*));
     if (!grid->values) {
-        destroyGrid(grid);
+        ctg_grid_destroy(grid);
         last_error = ERR_MEMORY_ALLOCATION;
         return NULL;
     }
@@ -67,11 +41,11 @@ Grid* initGrid(int width, int height, int* values) {
         }
     }
 
-    initMoveStack(&grid->moveHistory, 100);
+    ctg_movestack_init(&grid->moveHistory, 100);
     return grid;
 }
 
-void destroyGrid(Grid* grid) {
+void ctg_grid_destroy(Grid* grid) {
     if (grid) {
         for (int y = 0; y < grid->height; y++) {
             free(grid->values[y]);
@@ -79,21 +53,21 @@ void destroyGrid(Grid* grid) {
         free(grid->values);
         grid->values = NULL;
 
-        freeMoveStack(&grid->moveHistory);
+        ctg_movestack_free(&grid->moveHistory);
         free(grid);
     }
 }
 
-bool isGridSolved(const Grid* grid) {
+bool ctg_grid_is_solved(const Grid* grid) {
     return grid->score == 0;
 }
 
-int getGridValue(const Grid* grid, int x, int y) {
-    if (!inBounds(grid, x, y)) return -1;
+int ctg_grid_get_value(const Grid* grid, int x, int y) {
+    if (!ctg_grid_in_bounds(grid, x, y)) return -1;
     return grid->values[y][x];
 }
 
-bool inBounds(const Grid* grid, int x, int y) {
+bool ctg_grid_in_bounds(const Grid* grid, int x, int y) {
     return x >= 0 && x < grid->width && y >= 0 && y < grid->height;
 }
 
