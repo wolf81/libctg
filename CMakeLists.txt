@@ -35,8 +35,11 @@ include_directories(src ${LUAJIT_SRC_DIR})
 
 # Create a shared library
 add_library(libctg SHARED
-    src/libctg.c
-    src/libctg_lua.c
+    src/ctg_lua.c
+    src/ctg_grid.c
+    src/ctg_iterator.c
+    src/ctg_io.c
+    src/ctg_move.c
 )
 
 # Always produce libctg.dll / libctg.so / libctg.dylib

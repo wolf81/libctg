@@ -1,9 +1,9 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <stdlib.h>
-#include "libctg.h"
+#include "ctg.h"
 
-#define GRID_MT "libctg.grid_mt" // Grid metatable
+#define GRID_MT "ctg.grid_mt" // Grid metatable
 
 // Function to convert the direction enum to a string.
 static const char* directionToString(Direction dir) {

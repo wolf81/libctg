@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "libctg.h"
+#include "ctg.h"
 
 int main() {
     // Input string
