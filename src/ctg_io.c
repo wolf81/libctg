@@ -28,7 +28,6 @@ static char *trim(const char *str) {
     return trimmed;
 }
 
-
 char* ctg_io_grid_to_string(const Grid* grid) {
     int estimatedSize = grid->length * 4 + grid->height + 1;
     char* buffer = malloc(estimatedSize);
