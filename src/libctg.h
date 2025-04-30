@@ -33,6 +33,7 @@ typedef struct {
     Move move;
     int svalue; // value at source before move
     int tvalue; // value at target before move
+    int scoreChange;
 } MoveRecord;
 
 typedef struct {

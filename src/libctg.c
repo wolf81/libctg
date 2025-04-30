@@ -243,11 +243,11 @@ MoveResult peekGridMove(const Grid* grid, Move* move) {
     }
 
     int sx = move->x, sy = move->y;
-    int value = grid->values[sy][sx];
-    int tx = sx + move->dir.dx * value;
-    int ty = sy + move->dir.dy * value;
+    int svalue = grid->values[sy][sx];
+    int tx = sx + move->dir.dx * svalue;
+    int ty = sy + move->dir.dy * svalue;
     int tvalue = grid->values[ty][tx];
-    int change = move->add ? value : -value;
+    int change = move->add ? svalue : -svalue;
 
     return (MoveResult){ tx, ty, abs(tvalue + change), change };
 }
@@ -260,15 +260,14 @@ bool revertGridMove(Grid* grid) {
 
     int sx = move.x;
     int sy = move.y;
-    int value = record.svalue;
 
-    int tx = sx + move.dir.dx * value;
-    int ty = sy + move.dir.dy * value;
+    int tx = sx + move.dir.dx * record.svalue;
+    int ty = sy + move.dir.dy * record.svalue;
 
     grid->score -= grid->values[ty][tx];
     grid->score += (record.svalue + record.tvalue);
 
-    grid->values[sx][sy] = record.svalue;
+    grid->values[sy][sx] = record.svalue;
     grid->values[ty][tx] = record.tvalue;
 
     return true;
