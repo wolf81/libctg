@@ -41,17 +41,17 @@ local value = grid:getValue(8, 5) --> 7
 local w, h = grid:getSize() --> 8, 5
 
 -- we can create a move as such ...
-local move = { 3, 3, 'L', false } -- x, y, direction, add?
+local move = { 3, 3, 'L', false } --> x, y, direction, add?
 
 -- check if a move is possible
 local can_move = grid:isValidMove(unpack(move)) --> true
 
 -- check the result of a move, without performing the move
 -- PLEASE NOTE: the change value is the value in source cell with add/subtract sign, in this case -2
-local x, y, value, change = grid:peekMove(unpack(move))
+local x, y, value, change = grid:peekMove(unpack(move)) --> 1, 3, 1, -2
 
 -- apply the move; returns x, y & value in target cell - in case of invalid cell returns -1, -1, 0
-local v = grid:applyMove(unpack(move)) --> 1, 3, 1
+local x, y, value, change = grid:applyMove(unpack(move)) --> 1, 3, 1, -2
 
 -- check move history
 for _, move in ipairs(grid:getMoves()) do
@@ -64,9 +64,11 @@ local is_solved = grid:isSolved() --> false
 
 -- iterate over the values in the grid
 for x, y, value in grid:iter() do
-    print(string.format('%d, %d: %d', x, y, value)) --> 1, 1: 0 ... 8, 5: 7
-end
-
+    print(string.format('(%d, %d): %d', x, y, value)) --> (1, 1): 0
+end                                                   --> (2, 1): 0
+                                                      --  ...
+                                                      --> (8, 5): 7
+                                                      
 -- revert the last move, returns true while moves exist in move history
 for i = 1, 2 do
     print(tostring(grid:revertMove())) --> true, false
