@@ -6,7 +6,7 @@
 #define GRID_MT "ctg.grid_mt" // Grid metatable
 
 // Function to convert the direction enum to a string.
-static const char* directionToString(Direction dir) {
+static const char* direction_to_string(Direction dir) {
     // Handle horizontal directions (Left/Right)
     if (dir.dy == 0) {
         if (dir.dx == 1) return "R";  // Right
@@ -23,7 +23,12 @@ static const char* directionToString(Direction dir) {
     return NULL;
 }
 
-static int l_gridFromString(lua_State* L) {
+static int l_get_last_error(lua_State* L) {
+    lua_pushinteger(L, last_error);
+    return 1;
+}
+
+static int l_parse_grid(lua_State* L) {
     const char* input = luaL_checkstring(L, 1);
 
     // Parse the grid from the input string
@@ -46,7 +51,7 @@ static int l_gridFromString(lua_State* L) {
     return 1;  // Return the userdata (Grid object) to Lua
 }
 
-static int l_gridToString(lua_State* L) {
+static int l_tostring(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
 
@@ -65,7 +70,7 @@ static int l_gridToString(lua_State* L) {
     return 1;  // Return the string to Lua
 }
 
-static int l_getGridValue(lua_State* L) {
+static int l_get_value(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
 
@@ -86,7 +91,7 @@ static int l_getGridValue(lua_State* L) {
     return 1;
 }
 
-static int l_isGridSolved(lua_State* L) {
+static int l_is_solved(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
 
@@ -107,7 +112,7 @@ static int l_isGridSolved(lua_State* L) {
     return 1;
 }
 
-static int l_peekGridMove(lua_State* L) {
+static int l_peek_move(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
 
@@ -154,7 +159,7 @@ static int l_peekGridMove(lua_State* L) {
     return 4;    
 }
 
-static int l_revertGridMove(lua_State* L) {
+static int l_revert_move(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
 
@@ -176,7 +181,7 @@ static int l_revertGridMove(lua_State* L) {
     return 1;
 }
 
-static int l_executeGridMove(lua_State* L) {
+static int l_execute_move(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
 
@@ -223,7 +228,7 @@ static int l_executeGridMove(lua_State* L) {
     return 4;    
 }
 
-static int l_validateGridMove(lua_State* L) {
+static int l_is_valid_move(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
 
@@ -269,7 +274,7 @@ static int l_validateGridMove(lua_State* L) {
     return 1;  // Return the boolean result
 }
 
-static int l_destroyGrid(lua_State* L) {
+static int l_gc(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
 
@@ -284,7 +289,7 @@ static int l_destroyGrid(lua_State* L) {
     return 0;  // No return value
 }
 
-static int l_getGridSize(lua_State* L) {
+static int l_get_size(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
 
@@ -301,7 +306,7 @@ static int l_getGridSize(lua_State* L) {
     return 2;
 }
 
-static int l_getMoveHistory(lua_State* L) {
+static int l_get_moves(lua_State* L) {
     // Ensure the argument is a userdata (Grid object)
     luaL_checktype(L, 1, LUA_TUSERDATA);
 
@@ -330,7 +335,7 @@ static int l_getMoveHistory(lua_State* L) {
         lua_rawseti(L, -2, 2);
 
         // Add the direction as a string
-        lua_pushstring(L, directionToString(move->dir));
+        lua_pushstring(L, direction_to_string(move->dir));
         lua_rawseti(L, -2, 3);
 
         // Add the add flag (true/false)
@@ -344,7 +349,7 @@ static int l_getMoveHistory(lua_State* L) {
     return 1;  // Return the move history table.    
 }
 
-static int l_gridPairsIter(lua_State* L) {
+static int l_iter_next(lua_State* L) {
     GridIterator* iter = (GridIterator*)lua_touserdata(L, lua_upvalueindex(1));
 
     int x, y, value;
@@ -358,7 +363,7 @@ static int l_gridPairsIter(lua_State* L) {
     return 3;
 }
 
-static int l_gridPairs(lua_State* L) {
+static int l_iter(lua_State* L) {
     Grid* grid = *(Grid**)luaL_checkudata(L, 1, GRID_MT);
 
     // Allocate userdata for GridIterator
@@ -366,7 +371,7 @@ static int l_gridPairs(lua_State* L) {
     ctg_iterator_init(iter, grid); // Initialize the iterator
 
     // Push the iterator function with 1 upvalue (GridIterator*)
-    lua_pushcclosure(L, l_gridPairsIter, 1);
+    lua_pushcclosure(L, l_iter_next, 1);
     return 1;
 }
 
@@ -374,40 +379,40 @@ static void createGridMetatable(lua_State* L) {
     // Create the metatable for the grid (returns 1 if the metatable is new)
     if (luaL_newmetatable(L, GRID_MT)) {
         // assign meta-methods
-        lua_pushcfunction(L, l_destroyGrid);
+        lua_pushcfunction(L, l_gc);
         lua_setfield(L, -2, "__gc"); // automatic garbage collection
 
-        lua_pushcfunction(L, l_gridToString);  // Push the toString function
+        lua_pushcfunction(L, l_tostring);  // Push the toString function
         lua_setfield(L, -2, "__tostring"); // Assign it as the __tostring metamethod
 
         // Create method table (a table to store methods)
         lua_newtable(L);  // Create a new table to store methods
 
-        lua_pushcfunction(L, l_gridPairs);
+        lua_pushcfunction(L, l_iter);
         lua_setfield(L, -2, "iter");
 
-        lua_pushcfunction(L, l_validateGridMove);
+        lua_pushcfunction(L, l_is_valid_move);
         lua_setfield(L, -2, "isValidMove");
 
-        lua_pushcfunction(L, l_executeGridMove);
+        lua_pushcfunction(L, l_execute_move);
         lua_setfield(L, -2, "applyMove");
 
-        lua_pushcfunction(L, l_revertGridMove);
+        lua_pushcfunction(L, l_revert_move);
         lua_setfield(L, -2, "revertMove");
 
-        lua_pushcfunction(L, l_peekGridMove);
+        lua_pushcfunction(L, l_peek_move);
         lua_setfield(L, -2, "peekMove");
 
-        lua_pushcfunction(L, l_getGridValue);
+        lua_pushcfunction(L, l_get_value);
         lua_setfield(L, -2, "getValue");
 
-        lua_pushcfunction(L, l_isGridSolved);
+        lua_pushcfunction(L, l_is_solved);
         lua_setfield(L, -2, "isSolved");
 
-        lua_pushcfunction(L, l_getGridSize);
+        lua_pushcfunction(L, l_get_size);
         lua_setfield(L, -2, "getSize");
 
-        lua_pushcfunction(L, l_getMoveHistory);
+        lua_pushcfunction(L, l_get_moves);
         lua_setfield(L, -2, "getMoves");
 
         // Assign the method table to the __index field of the metatable
@@ -422,11 +427,6 @@ static void createGridMetatable(lua_State* L) {
     lua_pop(L, 1);
 }
 
-static int l_getLastError(lua_State* L) {
-    lua_pushinteger(L, last_error);
-    return 1;
-}
-
 LIBCTG_API int luaopen_libctg(lua_State* L) {
       // Create and register the metatable
     createGridMetatable(L);  // use your existing helper
@@ -434,10 +434,10 @@ LIBCTG_API int luaopen_libctg(lua_State* L) {
     // Create the module table
     lua_newtable(L);
 
-    lua_pushcfunction(L, l_gridFromString);
+    lua_pushcfunction(L, l_parse_grid);
     lua_setfield(L, -2, "parseGrid");
 
-    lua_pushcfunction(L, l_getLastError);
+    lua_pushcfunction(L, l_get_last_error);
     lua_setfield(L, -2, "getLastError");
 
     return 1;  // Return the module
